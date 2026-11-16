@@ -1,16 +1,11 @@
 @echo off
-chcp 65001 >nul
-title تشغيل منصة التعليم الذكية
+setlocal
+cd /d "%~dp0"
 
-echo ========================================================
-echo   جارٍ تشغيل منظومة المنصة التعليمية الذكية...
-echo ========================================================
-echo.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\start.ps1" %*
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\start.ps1" %*
-
-if %errorlevel% neq 0 (
+if %ERRORLEVEL% neq 0 (
     echo.
-    echo [خطأ] حدثت مشكلة أثناء التشغيل.
+    echo [ERROR] An error occurred while running the start script.
     pause
 )

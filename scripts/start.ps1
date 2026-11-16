@@ -10,6 +10,8 @@ param(
     [switch]$NoBrowser
 )
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 $Host.UI.RawUI.WindowTitle = "منظومة المنصة التعليمية الذكية"
 $root = (Split-Path -Parent $PSScriptRoot)
 
