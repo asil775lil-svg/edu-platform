@@ -12,6 +12,20 @@ export default defineConfig(({ mode }) => {
       preserveSymlinks: true,
     },
     plugins: [react(), tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            "vendor-react": ["react", "react-dom", "react-router-dom"],
+            "vendor-editor": [
+              "@tiptap/react",
+              "@tiptap/starter-kit",
+              "@tiptap/extension-placeholder",
+            ],
+          },
+        },
+      },
+    },
     server: {
       port: 5173,
       proxy: {
