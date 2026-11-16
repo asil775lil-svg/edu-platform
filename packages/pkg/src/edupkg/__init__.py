@@ -35,6 +35,7 @@ from .errors import (
     SignatureError,
     UnsupportedVersion,
 )
+from .html_exporter import export_standalone_html
 from .reader import MediaEntry, PackageInfo, inspect_package, is_encrypted, read_public_header
 
 __all__ = [
@@ -60,6 +61,7 @@ __all__ = [
     "build_package",
     "canonical_json",
     "count_course",
+    "export_standalone_html",
     "generate_keypair",
     "inspect_package",
     "is_encrypted",

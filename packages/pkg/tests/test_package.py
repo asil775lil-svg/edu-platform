@@ -262,3 +262,14 @@ def test_future_format_version_is_rejected():
             entries.append((name, canonical_json(manifest) if name == "manifest.json" else data))
     with pytest.raises(UnsupportedVersion):
         inspect_package(_write_zip(entries))
+
+
+def test_export_standalone_html():
+    from edupkg import export_standalone_html
+
+    html = export_standalone_html(SAMPLE_COURSE, {"testsha": b"\x89PNG\r\n\x1a\n" + b"\x00" * 32})
+    assert "<!DOCTYPE html>" in html
+    assert "الرياضيات — الصف الثالث" in html
+    assert "data:image/png;base64," in html
+    assert "الأعداد" in html
+

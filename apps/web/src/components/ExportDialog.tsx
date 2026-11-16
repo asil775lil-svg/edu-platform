@@ -95,14 +95,25 @@ export function ExportDialog({
 
           {error && <div className="alert alert-error">{error}</div>}
 
-          <button
-            className="btn btn-primary"
-            onClick={start}
-            disabled={busy || (protection === "invite-code" && code.trim().length < 4)}
-          >
-            {busy && <span className="spinner" />}
-            {busy ? stage : "تصدير الحزمة"}
-          </button>
+          <div className="row" style={{ gap: "0.6rem" }}>
+            <button
+              className="btn btn-primary"
+              style={{ flex: 1 }}
+              onClick={start}
+              disabled={busy || (protection === "invite-code" && code.trim().length < 4)}
+            >
+              {busy && <span className="spinner" />}
+              {busy ? stage : "تصدير حزمة .edupkg"}
+            </button>
+            <a
+              className="btn"
+              href={`/api/courses/${courseId}/export-html`}
+              download
+              title="تصدير كصفحة ويب مستقلة تعمل بدون إنترنت وبدون تثبيت برامج"
+            >
+              🌐 تصدير HTML أوفلاين
+            </a>
+          </div>
         </div>
       ) : (
         <div className="stack">

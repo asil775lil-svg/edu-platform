@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session as DbSession
 
 from app.api.deps import current_user, owned_course
 from app.db.base import get_db
-from app.db.models import Course, CourseVersion, LessonIndex, User
+from app.db.models import Asset, Course, CourseVersion, LessonIndex, User
 from app.schemas import CourseCreate, CourseDetail, CourseOut, CourseUpdate, VersionOut
 from app.services.courses import course_counts, empty_draft, publish_snapshot
 
@@ -167,3 +167,47 @@ def list_versions(
         )
         for version in versions
     ]
+
+
+@router.get("/{course_id}/export-html")
+def export_course_html(
+    course_id: str, db: DbSession = Depends(get_db), user: User = Depends(current_user)
+) -> Response:
+    import urllib.parse
+    from edupkg import export_standalone_html
+    from app.services.storage import storage
+
+    course = owned_course(db, course_id, user)
+    if course.published_version_id:
+        version = db.get(CourseVersion, course.published_version_id)
+        snapshot = dict(version.snapshot) if version else publish_snapshot(course)
+    else:
+        snapshot = publish_snapshot(course)
+
+    media_map: dict[str, bytes] = {}
+    for unit in snapshot.get("units") or []:
+        for lesson in unit.get("lessons") or []:
+            for block in lesson.get("blocks") or []:
+                sha = block.get("assetSha256")
+                if isinstance(sha, str) and sha not in media_map:
+                    asset = db.scalar(select(Asset).where(Asset.sha256 == sha))
+                    if asset is not None:
+                        try:
+                            # نضمن فقط الوسائط ذات الحجم المعقول (<10MB) داخل الـ HTML
+                            if asset.size <= 10 * 1024 * 1024:
+                                media_map[sha] = storage.path(asset.storage_key).read_bytes()
+                        except (FileNotFoundError, ValueError):
+                            pass
+
+    html_content = export_standalone_html(snapshot, media_map)
+    safe_title = "".join(c for c in course.title if c not in '\\/:*?"<>|').strip() or "course"
+    encoded_filename = urllib.parse.quote(f"{safe_title}.html")
+
+    return Response(
+        content=html_content,
+        media_type="text/html; charset=utf-8",
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
+        },
+    )
+

@@ -224,6 +224,16 @@ def test_requires_auth(client: TestClient):
     assert anonymous.get("/api/courses").status_code == 401
 
 
+def test_export_course_html(client: TestClient):
+    course = _course_with_content(client)
+    res = client.get(f"/api/courses/{course['id']}/export-html")
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]
+    assert "<!DOCTYPE html>" in res.text
+    assert "الرياضيات" in res.text
+
+
+
 def test_user_signing_key_lifecycle():
     from nacl.signing import SigningKey
     from edupkg import b64url_encode
