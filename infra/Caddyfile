@@ -1,0 +1,13 @@
+:80 {
+    encode gzip zstd
+
+    # توجيه مسارات API إلى خادم FastAPI
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # توجيه باقي المسارات إلى واجهة الويب
+    handle {
+        reverse_proxy web:80
+    }
+}

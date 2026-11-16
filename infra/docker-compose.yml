@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: edu
+      POSTGRES_PASSWORD: edu_secure_password_replace_in_prod
+      POSTGRES_DB: edudb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edu -d edudb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      EDU_DATABASE_URL: postgresql+psycopg://edu:edu_secure_password_replace_in_prod@postgres:5432/edudb
+      EDU_SECRET_KEY: change_this_to_a_long_random_secret_in_production
+      EDU_STORAGE_DIR: /app/storage
+      EDU_WEB_ORIGIN: http://localhost
+      EDU_COOKIE_SECURE: "false"
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+
+volumes:
+  postgres_data:
+  storage_data:
+  caddy_data:
+  caddy_config:
