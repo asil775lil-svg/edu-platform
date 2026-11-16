@@ -5,17 +5,16 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response
-from nacl.signing import SigningKey
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
 from app.api.deps import current_user
 from app.core.config import settings
 from app.core.security import (
+    generate_user_signing_key,
     hash_password,
     new_token,
     token_fingerprint,
-    user_signing_seed,
     verify_password,
 )
 from app.db.base import get_db
@@ -60,7 +59,9 @@ def register(payload: RegisterIn, response: Response, db: DbSession = Depends(ge
     )
     db.add(user)
     db.flush()  # يولّد المعرّف
-    user.public_key = _public_key_for(user.id)
+    pub_key, priv_enc = generate_user_signing_key(user.id)
+    user.public_key = pub_key
+    user.private_key_enc = priv_enc
     db.commit()
     _start_session(db, user, response)
     return user
@@ -89,9 +90,3 @@ def logout(
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(current_user)):
     return user
-
-
-def _public_key_for(user_id: str) -> str:
-    from edupkg import b64url_encode
-
-    return b64url_encode(bytes(SigningKey(user_signing_seed(user_id)).verify_key))

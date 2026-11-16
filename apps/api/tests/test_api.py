@@ -222,3 +222,21 @@ def test_encrypted_export_requires_code(client: TestClient):
 def test_requires_auth(client: TestClient):
     anonymous = TestClient(app)
     assert anonymous.get("/api/courses").status_code == 401
+
+
+def test_user_signing_key_lifecycle():
+    from nacl.signing import SigningKey
+    from edupkg import b64url_encode
+    from app.core.security import decrypt_user_signing_key, generate_user_signing_key
+
+    user_id = "test_user_123"
+    pub_key, priv_enc = generate_user_signing_key(user_id)
+    assert pub_key and priv_enc
+    seed = decrypt_user_signing_key(user_id, priv_enc)
+    sk = SigningKey(seed)
+    assert b64url_encode(bytes(sk.verify_key)) == pub_key
+
+    # التحقق من أن user_id الخاطئ يفشل فك التشفير
+    with pytest.raises(Exception):
+        decrypt_user_signing_key("different_user_id", priv_enc)
+

@@ -83,7 +83,7 @@ def _export(db: DbSession, job: PackageJob) -> None:
                 media.append(MediaFile(name=f"{sha}{asset.ext}", data=payload))
 
     meta = job.meta or {}
-    seed = user_signing_seed(user.id)
+    seed = user_signing_seed(user.id, user.private_key_enc)
     built = build_package(
         course=snapshot,
         author={"id": user.id, "name": user.name, "publicKey": user.public_key or ""},
