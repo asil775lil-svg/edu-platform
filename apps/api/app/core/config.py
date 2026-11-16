@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     signed_url_ttl_seconds: int = 900
     max_upload_bytes: int = 2 * 1024**3
+    firebase_project_id: str = "smart-education-ed253"
+    gemini_api_key: str | None = None
+    openai_api_key: str | None = None
+
 
 
 settings = Settings()

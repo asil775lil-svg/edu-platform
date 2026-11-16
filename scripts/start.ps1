@@ -66,9 +66,19 @@ if ($busy) {
     $ApiPort = 8020
 }
 
-# ضبط عنوان الـ API للواجهة
+# ضبط عنوان الـ API للواجهة مع الحفاظ على متغيرات Firebase
 $envLocal = Join-Path $webDir ".env.local"
-"VITE_API_TARGET=http://127.0.0.1:$ApiPort" | Set-Content -Path $envLocal -Encoding UTF8
+$envLines = @(
+    "VITE_API_TARGET=http://127.0.0.1:$ApiPort",
+    "VITE_FIREBASE_API_KEY=AIzaSyD2XQ_7uIOk6R1w1MFtc5l8TXW16Xaif8c",
+    "VITE_FIREBASE_AUTH_DOMAIN=smart-education-ed253.firebaseapp.com",
+    "VITE_FIREBASE_PROJECT_ID=smart-education-ed253",
+    "VITE_FIREBASE_STORAGE_BUCKET=smart-education-ed253.firebasestorage.app",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID=981195951450",
+    "VITE_FIREBASE_APP_ID=1:981195951450:web:9f1c9518cfdbcfd0c47763",
+    "VITE_FIREBASE_MEASUREMENT_ID=G-M6PP83HH9K"
+)
+$envLines -join "`r`n" | Set-Content -Path $envLocal -Encoding UTF8
 
 # 4. تشغيل خادم FastAPI
 Write-Host "[4/5] تشغيل خادم الـ API على http://127.0.0.1:$ApiPort ..." -ForegroundColor Yellow

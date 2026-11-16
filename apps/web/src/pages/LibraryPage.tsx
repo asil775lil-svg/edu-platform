@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "../components/Modal";
 import { ApiError, api } from "../lib/api";
+import { useAuth } from "../lib/auth";
 import type { CatalogItem, LibraryItem, PackageJob } from "../lib/types";
 
 export default function LibraryPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"my_courses" | "explore">("my_courses");
+
   const [items, setItems] = useState<LibraryItem[] | null>(null);
   const [catalog, setCatalog] = useState<CatalogItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +47,19 @@ export default function LibraryPage() {
       setBusy(false);
     }
   }
+
+  async function handleFork(courseId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const forked = await api.courses.fork(courseId);
+      navigate(`/studio/${forked.id}`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "فشل نسخ المادة إلى الاستوديو");
+      setBusy(false);
+    }
+  }
+
 
   async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -193,24 +209,44 @@ export default function LibraryPage() {
                   <div className="course-meta" style={{ marginTop: "0.8rem" }}>
                     <span>📚 {item.total_lessons} درس</span>
                   </div>
-                  {item.is_enrolled ? (
-                    <Link
-                      className="btn btn-sm"
-                      style={{ background: "rgba(16, 185, 129, 0.15)", color: "#6ee7b7", borderColor: "rgba(16, 185, 129, 0.35)" }}
-                      to={`/library/${item.course_id}`}
-                    >
-                      ✓ مشترك بالفعل — دراسة
-                    </Link>
-                  ) : (
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => handleEnroll(item.course_id)}
-                      disabled={busy}
-                    >
-                      + انضمام ودراسة المادة
-                    </button>
-                  )}
+                  <div className="row" style={{ gap: "0.4rem" }}>
+                    {item.is_enrolled ? (
+                      <Link
+                        className="btn btn-sm"
+                        style={{
+                          flex: 1,
+                          textAlign: "center",
+                          background: "rgba(16, 185, 129, 0.15)",
+                          color: "#6ee7b7",
+                          borderColor: "rgba(16, 185, 129, 0.35)",
+                        }}
+                        to={`/library/${item.course_id}`}
+                      >
+                        ✓ مشترك — دراسة
+                      </Link>
+                    ) : (
+                      <button
+                        className="btn btn-sm btn-primary"
+                        style={{ flex: 1 }}
+                        onClick={() => handleEnroll(item.course_id)}
+                        disabled={busy}
+                      >
+                        + انضمام ودراسة
+                      </button>
+                    )}
+                    {user?.role === "teacher" && (
+                      <button
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => handleFork(item.course_id)}
+                        disabled={busy}
+                        title="نسخ هذا المنهج إلى الاستوديو وتعديله وتخصيصه لطلابك (Fork)"
+                      >
+                        🍴 نسخ للمنهج
+                      </button>
+                    )}
+                  </div>
                 </article>
+
               ))}
             </div>
           )}

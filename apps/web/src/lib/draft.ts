@@ -120,8 +120,25 @@ export function defaultBlock(type: BlockType): Block {
       return { id, type, assetSha256: "", caption: "" };
     case "image":
       return { id, type, assetSha256: "", alt: "" };
+    case "code":
+      return {
+        id,
+        type,
+        language: "python",
+        code: `# اكتب الكود البرمجي هنا\ndef hello():\n    print("مرحباً بالعالم!")\n\nhello()`,
+      };
+    case "math":
+      return {
+        id,
+        type,
+        latex: "f(x) = \\int_{0}^{\\infty} e^{-x} \\, dx = 1",
+        displayMode: true,
+      };
+    case "divider":
+      return { id, type };
     default:
       return { id, type: "text" };
+
   }
 }
 

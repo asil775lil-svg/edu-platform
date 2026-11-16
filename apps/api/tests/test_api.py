@@ -285,3 +285,147 @@ def test_user_signing_key_lifecycle():
     with pytest.raises(Exception):
         decrypt_user_signing_key("different_user_id", priv_enc)
 
+
+def test_discussions_flow(client: TestClient):
+    _register(client, "teacher_disc@example.com", "أستاذ النقاش", role="teacher")
+    course = _course_with_content(client)
+    lesson_id = course["draft"]["units"][0]["lessons"][0]["id"]
+
+    # طرح سؤال
+    post_res = client.post(
+        f"/api/courses/{course['id']}/lessons/{lesson_id}/discussions",
+        json={"content": "ما هو الفرق بين التكامل والتفاضل؟"},
+    )
+    assert post_res.status_code == 201
+    question = post_res.json()
+    assert question["content"] == "ما هو الفرق بين التكامل والتفاضل؟"
+    assert question["user_role"] == "teacher"
+
+    # إضافة رد
+    reply_res = client.post(
+        f"/api/courses/{course['id']}/lessons/{lesson_id}/discussions",
+        json={"content": "التكامل هو العملية العكسية للتفاضل.", "parent_id": question["id"]},
+    )
+    assert reply_res.status_code == 201
+    reply = reply_res.json()
+    assert reply["parent_id"] == question["id"]
+
+    # جلب المناقشات
+    list_res = client.get(f"/api/courses/{course['id']}/lessons/{lesson_id}/discussions")
+    assert list_res.status_code == 200
+    discussions = list_res.json()
+    assert len(discussions) == 1
+    assert len(discussions[0]["replies"]) == 1
+    assert discussions[0]["replies"][0]["content"] == "التكامل هو العملية العكسية للتفاضل."
+
+
+def test_smart_markdown_import(client: TestClient):
+    _register(client, "teacher_md@example.com", "أستاذ الماركداون", role="teacher")
+    md_content = """# وحدة الجبر
+## الدرس الأول: المعادلات الخطية
+### مقدمة هامة
+المعادلات الخطية تمثل خطاً مستقيماً في المستوى الإحداثي.
+
+```python
+x = 5
+print(x * 2)
+```
+
+$$ y = mx + b $$
+
+> [!tip] تلميح: تذكر أن الميل يمثل معدل التغير.
+"""
+    res = client.post(
+        "/api/courses/import-smart",
+        json={"title": "منهج الجبر الحديث", "markdown_content": md_content},
+    )
+    assert res.status_code == 201
+    imported = res.json()
+    assert imported["title"] == "منهج الجبر الحديث"
+    units = imported["draft"]["units"]
+    assert len(units) == 1
+    assert units[0]["title"] == "وحدة الجبر"
+    lessons = units[0]["lessons"]
+    assert len(lessons) == 1
+    assert lessons[0]["title"] == "الدرس الأول: المعادلات الخطية"
+    blocks = lessons[0]["blocks"]
+    assert any(b["type"] == "heading" for b in blocks)
+    assert any(b["type"] == "code" for b in blocks)
+    assert any(b["type"] == "math" for b in blocks)
+    assert any(b["type"] == "callout" for b in blocks)
+
+
+def test_course_analytics(client: TestClient):
+    _register(client, "teacher_analytics@example.com", "أستاذ التحليلات", role="teacher")
+    course = _course_with_content(client)
+    client.post(f"/api/courses/{course['id']}/publish")
+
+    # تسجيل طالب واشتراكه وإكماله لدرس
+    student = TestClient(app)
+    _register(student, "analytics_student@example.com", "فاطمة أحمد", role="student")
+    student.post("/api/library/enroll", json={"course_id": course["id"]})
+    lesson_id = course["draft"]["units"][0]["lessons"][0]["id"]
+    student.put(
+        f"/api/library/{course['id']}/progress/{lesson_id}",
+        json={"status": "completed", "position": 100},
+    )
+
+    # طلب التحليلات من قبل المعلم
+    analytics_res = client.get(f"/api/courses/{course['id']}/analytics")
+    assert analytics_res.status_code == 200
+    data = analytics_res.json()
+    assert data["total_enrollments"] >= 1
+    assert data["completed_students"] >= 1
+    assert len(data["students"]) >= 1
+    student_record = next(s for s in data["students"] if s["email"] == "analytics_student@example.com")
+    assert student_record["name"] == "فاطمة أحمد"
+    assert student_record["completion_rate"] == 100
+
+
+def test_ai_assistant(client: TestClient):
+    _register(client, "teacher_ai@example.com", "أستاذ الذكاء", role="teacher")
+    text = (
+        "البرمجة كائنية التوجه (OOP) هي نمط برمجي يعتمد على مفهوم الكائنات. "
+        "تحتوي الكائنات على بيانات على شكل حقول، وتوابع على شكل دوال. "
+        "المبادئ الأساسية الأربعة هي التغليف والوراثة وتعدد الأشكال والتجريد."
+    )
+    # 1. توليد اختبار
+    res_quiz = client.post(
+        "/api/ai/generate",
+        json={"action": "generate_quiz", "text": text, "lesson_title": "مقدمة OOP"},
+    )
+    assert res_quiz.status_code == 200
+    quiz_data = res_quiz.json()
+    assert quiz_data["action"] == "generate_quiz"
+    assert "quizzes" in quiz_data["result"]
+    assert len(quiz_data["result"]["quizzes"]) > 0
+
+    # 2. تلخيص
+    res_summary = client.post(
+        "/api/ai/generate",
+        json={"action": "summarize", "text": text},
+    )
+    assert res_summary.status_code == 200
+    summary_data = res_summary.json()
+    assert "summary" in summary_data["result"]
+    assert len(summary_data["result"]["key_points"]) > 0
+
+
+def test_fork_course(client: TestClient):
+    _register(client, "teacher_original@example.com", "المعلم الأصلي", role="teacher")
+    course = _course_with_content(client)
+    client.post(f"/api/courses/{course['id']}/publish")
+
+    # معلم آخر يقوم بتفريغ / نسخ المنهج
+    teacher2 = TestClient(app)
+    _register(teacher2, "teacher_forker@example.com", "المعلم المطور", role="teacher")
+    fork_res = teacher2.post(f"/api/courses/{course['id']}/fork")
+    assert fork_res.status_code == 201
+    forked = fork_res.json()
+    assert forked["id"] != course["id"]
+    assert "نسخة" in forked["title"]
+    assert len(forked["draft"]["units"]) == len(course["draft"]["units"])
+
+
+
+

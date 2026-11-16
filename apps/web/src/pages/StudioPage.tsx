@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AnalyticsModal } from "../components/AnalyticsModal";
 import { Modal } from "../components/Modal";
+import { SmartImportModal } from "../components/SmartImportModal";
 import { ApiError, api } from "../lib/api";
 import type { CourseSummary, PackageJob } from "../lib/types";
 
@@ -9,8 +11,11 @@ export default function StudioPage() {
   const [courses, setCourses] = useState<CourseSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [smartImportOpen, setSmartImportOpen] = useState(false);
+  const [analyticsCourseId, setAnalyticsCourseId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
+
 
   const [importJob, setImportJob] = useState<PackageJob | null>(null);
   const [codeModal, setCodeModal] = useState(false);
@@ -124,16 +129,24 @@ export default function StudioPage() {
           />
           <button
             className="btn"
+            onClick={() => setSmartImportOpen(true)}
+            title="تحويل ملف Markdown أو مجلد إلى منهج كامل بوحدات ودروس"
+          >
+            📥 استيراد ذكي (مجلد/Markdown)
+          </button>
+          <button
+            className="btn"
             onClick={() => fileInput.current?.click()}
             disabled={busy}
           >
-            ⬆ استيراد حزمة
+            ⬆ استيراد حزمة .edupkg
           </button>
           <button className="btn btn-primary" onClick={() => setCreating(true)}>
             + مادة جديدة
           </button>
         </div>
       </div>
+
 
       {error && (
         <div className="alert alert-error" style={{ marginBottom: "1rem" }}>
@@ -179,13 +192,23 @@ export default function StudioPage() {
                 <span>📦 {course.unit_count} وحدات</span>
                 <span>📖 {course.lesson_count} دروس</span>
               </div>
-              <Link className="btn btn-sm" to={`/studio/${course.id}`}>
-                تحرير
-              </Link>
+              <div className="row" style={{ gap: "0.4rem" }}>
+                <Link className="btn btn-sm btn-primary" to={`/studio/${course.id}`} style={{ flex: 1, textAlign: "center" }}>
+                  تحرير
+                </Link>
+                <button
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => setAnalyticsCourseId(course.id)}
+                  title="عرض تحليلات تقدم وإكمال الطلاب"
+                >
+                  📊 التحليلات
+                </button>
+              </div>
             </article>
           ))}
         </div>
       )}
+
 
       {creating && (
         <Modal title="مادة جديدة" onClose={() => setCreating(false)}>
@@ -255,6 +278,24 @@ export default function StudioPage() {
           </form>
         </Modal>
       )}
+
+      {smartImportOpen && (
+        <SmartImportModal
+          onClose={() => setSmartImportOpen(false)}
+          onImported={(created) => {
+            setSmartImportOpen(false);
+            navigate(`/studio/${created.id}`);
+          }}
+        />
+      )}
+
+      {analyticsCourseId && (
+        <AnalyticsModal
+          courseId={analyticsCourseId}
+          onClose={() => setAnalyticsCourseId(null)}
+        />
+      )}
     </main>
   );
 }
+

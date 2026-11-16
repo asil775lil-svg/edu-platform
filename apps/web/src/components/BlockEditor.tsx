@@ -3,6 +3,7 @@ import { ApiError, api } from "../lib/api";
 import { defaultBlock, moveBlock } from "../lib/draft";
 import type { Block, BlockType, CalloutVariant, Lesson } from "../lib/types";
 import { useAssetUrl } from "../lib/useAssets";
+import { AiAssistantModal } from "./AiAssistantModal";
 import { RichText } from "./RichText";
 
 export function BlockEditor({
@@ -16,6 +17,7 @@ export function BlockEditor({
   const pendingType = useRef<BlockType>("image");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
 
   const patch = (blockId: string, changes: Partial<Block>) =>
     onChange({
@@ -24,6 +26,7 @@ export function BlockEditor({
         block.id === blockId ? { ...block, ...changes } : block,
       ),
     });
+
 
   const remove = (blockId: string) =>
     onChange({ ...lesson, blocks: lesson.blocks.filter((block) => block.id !== blockId) });
@@ -146,11 +149,25 @@ export function BlockEditor({
                 onChange={(changes) => patch(block.id, changes)}
               />
             )}
+
+            {block.type === "code" && (
+              <CodeBlock
+                block={block}
+                onChange={(changes) => patch(block.id, changes)}
+              />
+            )}
+
+            {block.type === "math" && (
+              <MathBlock
+                block={block}
+                onChange={(changes) => patch(block.id, changes)}
+              />
+            )}
           </div>
         ))}
       </div>
 
-      <div className="add-block">
+      <div className="add-block" style={{ flexWrap: "wrap", gap: "0.4rem" }}>
         <button className="btn btn-sm" onClick={() => add("text")}>
           + نص
         </button>
@@ -159,6 +176,12 @@ export function BlockEditor({
         </button>
         <button className="btn btn-sm" onClick={() => add("callout")}>
           + تنبيه
+        </button>
+        <button className="btn btn-sm" onClick={() => add("code")}>
+          + كود 💻
+        </button>
+        <button className="btn btn-sm" onClick={() => add("math")}>
+          + معادلة ∑
         </button>
         <button className="btn btn-sm" onClick={() => add("image")}>
           + صورة
@@ -172,9 +195,39 @@ export function BlockEditor({
         <button className="btn btn-sm" onClick={() => add("quiz")}>
           + سؤال
         </button>
+        <button
+          className="btn btn-sm btn-ghost"
+          style={{
+            border: "1px dashed var(--primary)",
+            color: "var(--primary)",
+            marginInlineStart: "auto",
+          }}
+          onClick={() => setShowAiModal(true)}
+          title="توليد أسئلة أو تلخيص محتوى الدرس آلياً بالذكاء الاصطناعي"
+        >
+          ✨ مساعد الذكاء الاصطناعي
+        </button>
       </div>
+
+      {showAiModal && (
+        <AiAssistantModal
+          mode="teacher"
+          lessonTitle={lesson.title}
+          lessonContentText={
+            lesson.blocks
+              .map((b) => b.text || b.code || b.latex || "")
+              .filter(Boolean)
+              .join("\n\n") || lesson.title
+          }
+          onClose={() => setShowAiModal(false)}
+          onApplyBlocks={(newBlocks) => {
+            onChange({ ...lesson, blocks: [...lesson.blocks, ...newBlocks] });
+          }}
+        />
+      )}
     </div>
   );
+
 }
 
 function MediaBlock({
@@ -330,3 +383,147 @@ function CalloutBlock({
     </div>
   );
 }
+
+function CodeBlock({
+  block,
+  onChange,
+}: {
+  block: Block;
+  onChange: (changes: Partial<Block>) => void;
+}) {
+  const languages = [
+    { value: "python", label: "Python" },
+    { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
+    { value: "html", label: "HTML" },
+    { value: "css", label: "CSS" },
+    { value: "sql", label: "SQL" },
+    { value: "cpp", label: "C++" },
+    { value: "bash", label: "Bash / Shell" },
+    { value: "json", label: "JSON" },
+  ];
+
+  return (
+    <div className="card card-flat stack" style={{ gap: "0.5rem", borderInlineStart: "3px solid #3b82f6" }}>
+      <div className="between" style={{ flexWrap: "wrap", gap: "0.4rem" }}>
+        <div className="row" style={{ gap: "0.4rem", alignItems: "center" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>💻 كتلة برمجية</span>
+          <select
+            className="input input-sm"
+            style={{ width: "auto" }}
+            value={block.language ?? "python"}
+            onChange={(e) => onChange({ language: e.target.value })}
+          >
+            {languages.map((l) => (
+              <option key={l.value} value={l.value}>
+                {l.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <textarea
+        className="textarea input-ltr"
+        style={{
+          fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+          fontSize: "0.88rem",
+          minHeight: 120,
+          background: "#0d1117",
+          color: "#e6edf3",
+          direction: "ltr",
+        }}
+        dir="ltr"
+        placeholder="// اكتب الكود هنا..."
+        value={block.code ?? ""}
+        onChange={(e) => onChange({ code: e.target.value })}
+      />
+    </div>
+  );
+}
+
+function MathBlock({
+  block,
+  onChange,
+}: {
+  block: Block;
+  onChange: (changes: Partial<Block>) => void;
+}) {
+  const shortcuts = [
+    { label: "كお客 (كسر)", snippet: "\\frac{a}{b}" },
+    { label: "√ جذر", snippet: "\\sqrt{x}" },
+    { label: "x² أُس", snippet: "x^{2}" },
+    { label: "∫ تكامل", snippet: "\\int_{a}^{b} f(x) \\, dx" },
+    { label: "∑ مجموع", snippet: "\\sum_{i=1}^{n} x_i" },
+    { label: "π باي", snippet: "\\pi" },
+    { label: "∞ ما لا نهاية", snippet: "\\infty" },
+    { label: "≠ لا يساوي", snippet: "\\neq" },
+    { label: "± زائد/ناقص", snippet: "\\pm" },
+  ];
+
+  function insertSnippet(snip: string) {
+    const cur = block.latex ?? "";
+    onChange({ latex: cur ? `${cur} ${snip}` : snip });
+  }
+
+  return (
+    <div className="card card-flat stack" style={{ gap: "0.5rem", borderInlineStart: "3px solid #8b5cf6" }}>
+      <div className="between">
+        <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>∑ معادلة رياضية (LaTeX)</span>
+        <label className="row" style={{ gap: "0.3rem", fontSize: "0.8rem", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={block.displayMode ?? true}
+            onChange={(e) => onChange({ displayMode: e.target.checked })}
+          />
+          عرض ممركز كسطر منفصل (Display Mode)
+        </label>
+      </div>
+
+      <div className="row" style={{ flexWrap: "wrap", gap: "0.3rem" }}>
+        {shortcuts.map((s) => (
+          <button
+            key={s.label}
+            type="button"
+            className="btn btn-sm btn-ghost"
+            style={{ fontSize: "0.75rem", padding: "2px 6px" }}
+            onClick={() => insertSnippet(s.snippet)}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        className="textarea input-ltr"
+        style={{
+          fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+          fontSize: "0.9rem",
+          minHeight: 70,
+          direction: "ltr",
+        }}
+        dir="ltr"
+        placeholder="مثال: f(x) = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}"
+        value={block.latex ?? ""}
+        onChange={(e) => onChange({ latex: e.target.value })}
+      />
+
+      {block.latex && (
+        <div
+          style={{
+            background: "var(--card-2)",
+            padding: "0.8rem",
+            borderRadius: "var(--radius)",
+            textAlign: block.displayMode ? "center" : "left",
+            direction: "ltr",
+            fontSize: "1.2rem",
+            fontFamily: "KaTeX_Main, Times New Roman, serif",
+            overflowX: "auto",
+          }}
+        >
+          {block.latex}
+        </div>
+      )}
+    </div>
+  );
+}
+

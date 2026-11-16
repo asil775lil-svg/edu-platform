@@ -24,6 +24,13 @@ class LoginIn(BaseModel):
     password: str
 
 
+class FirebaseLoginIn(BaseModel):
+    id_token: str
+    role: Literal["teacher", "student"] = "teacher"
+    name: str | None = None
+
+
+
 class ProfileUpdateIn(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     email: EmailStr | None = None
@@ -142,3 +149,85 @@ class AssetOut(BaseModel):
     size: int
     url: str
     deduplicated: bool = False
+
+
+# --------------------------------------------------------------------------- #
+# المناقشات والأسئلة (Discussions / Q&A)
+# --------------------------------------------------------------------------- #
+class DiscussionIn(BaseModel):
+    content: str = Field(min_length=1, max_length=5000)
+    parent_id: str | None = None
+
+
+class DiscussionOut(BaseModel):
+    id: str
+    course_id: str
+    lesson_id: str
+    user_id: str
+    user_name: str
+    user_role: str
+    content: str
+    parent_id: str | None = None
+    created_at: datetime
+    replies: list[DiscussionOut] = []
+
+    model_config = {"from_attributes": True}
+
+
+# --------------------------------------------------------------------------- #
+# التحليلات (Analytics)
+# --------------------------------------------------------------------------- #
+class StudentAnalytics(BaseModel):
+    user_id: str
+    name: str
+    email: str
+    completed_lessons: int
+    total_lessons: int
+    completion_rate: int
+    enrolled_at: datetime
+    last_activity: datetime | None
+
+
+class LessonAnalytics(BaseModel):
+    lesson_id: str
+    title: str
+    unit_title: str
+    completed_by_count: int
+    completion_rate: int
+
+
+class CourseAnalyticsOut(BaseModel):
+    course_id: str
+    title: str
+    total_enrollments: int
+    completed_students: int
+    average_completion_rate: int
+    total_notes: int
+    total_discussions: int
+    students: list[StudentAnalytics]
+    lessons: list[LessonAnalytics]
+
+
+# --------------------------------------------------------------------------- #
+# الذكاء الاصطناعي (AI Assistant)
+# --------------------------------------------------------------------------- #
+class AiGenerateIn(BaseModel):
+    action: Literal["generate_quiz", "summarize", "explain"]
+    text: str = Field(min_length=5, max_length=15000)
+    course_id: str | None = None
+    lesson_title: str | None = None
+
+
+class AiGenerateOut(BaseModel):
+    action: str
+    result: dict[str, Any]
+    source: str = "local"  # local | gemini | openai
+
+
+# --------------------------------------------------------------------------- #
+# الاستيراد الذكي (Smart Import)
+# --------------------------------------------------------------------------- #
+class SmartImportIn(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    markdown_content: str = Field(min_length=10)
+

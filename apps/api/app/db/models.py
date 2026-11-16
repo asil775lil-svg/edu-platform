@@ -152,6 +152,27 @@ class Note(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
 
+class Discussion(Base):
+    """أسئلة ونقاشات تفاعلية داخل كل درس."""
+
+    __tablename__ = "discussions"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    course_id: Mapped[str] = mapped_column(
+        ForeignKey("courses.id", ondelete="CASCADE"), index=True
+    )
+    lesson_id: Mapped[str] = mapped_column(String(64), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    user_name: Mapped[str] = mapped_column(String(120))
+    user_role: Mapped[str] = mapped_column(String(20), default="student")
+    content: Mapped[str] = mapped_column(Text)
+    parent_id: Mapped[str | None] = mapped_column(
+        ForeignKey("discussions.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+
 class PackageJob(Base):
     """عمليات التصدير/الاستيراد — تُنفَّذ في خلفية العملية."""
 

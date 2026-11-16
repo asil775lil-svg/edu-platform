@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session as DbSession
 
 from app.api.deps import current_user
 from app.core.config import settings
+from app.core.firebase import verify_firebase_token
 from app.core.security import (
     generate_user_signing_key,
     hash_password,
@@ -19,7 +20,7 @@ from app.core.security import (
 )
 from app.db.base import get_db
 from app.db.models import Session, User
-from app.schemas import LoginIn, ProfileUpdateIn, RegisterIn, UserOut
+from app.schemas import FirebaseLoginIn, LoginIn, ProfileUpdateIn, RegisterIn, UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -69,23 +70,62 @@ def register(payload: RegisterIn, response: Response, db: DbSession = Depends(ge
 
 @router.post("/login", response_model=UserOut)
 def login(payload: LoginIn, response: Response, db: DbSession = Depends(get_db)):
-    ident = (payload.login or payload.email or "").strip()
+    ident = (payload.login or payload.email or "").strip().lower()
     if not ident:
-        raise HTTPException(status_code=400, detail="يرجى إدخال اسم المستخدم أو البريد الإلكتروني")
+        raise HTTPException(status_code=400, detail="يجب إدخال البريد الإلكتروني أو اسم المستخدم")
 
     user = db.scalar(
         select(User).where(
             or_(
-                func.lower(User.email) == ident.lower(),
-                func.lower(User.name) == ident.lower(),
-                User.name == ident,
+                func.lower(User.email) == ident,
+                func.lower(User.name) == ident,
             )
         )
     )
     if user is None or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="اسم المستخدم/البريد أو كلمة المرور غير صحيحة")
+        raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
+
     _start_session(db, user, response)
     return user
+
+
+
+@router.post("/firebase", response_model=UserOut)
+def firebase_login(
+    payload: FirebaseLoginIn,
+    response: Response,
+    db: DbSession = Depends(get_db),
+):
+    try:
+        claims = verify_firebase_token(payload.id_token, settings.firebase_project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=str(exc))
+
+    email = claims.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="حساب Firebase لا يحتوي على بريد إلكتروني صالح")
+
+    email = email.lower()
+    user = db.scalar(select(User).where(func.lower(User.email) == email))
+    if user is None:
+        name = (payload.name or claims.get("name") or email.split("@")[0]).strip()
+        user = User(
+            email=email,
+            password_hash=hash_password(new_token()),
+            name=name or "مستخدم",
+            role=payload.role or "teacher",
+        )
+        db.add(user)
+        db.flush()
+        pub_key, priv_enc = generate_user_signing_key(user.id)
+        user.public_key = pub_key
+        user.private_key_enc = priv_enc
+        db.commit()
+
+    _start_session(db, user, response)
+    return user
+
+
 
 
 @router.patch("/profile", response_model=UserOut)

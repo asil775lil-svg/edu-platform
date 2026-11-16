@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { AnalyticsModal } from "../components/AnalyticsModal";
 import { BlockEditor } from "../components/BlockEditor";
 import { ExportDialog } from "../components/ExportDialog";
 import { LessonTree } from "../components/LessonTree";
@@ -19,8 +20,10 @@ export default function CourseEditorPage() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
+
 
   const firstRun = useRef(true);
 
@@ -131,9 +134,13 @@ export default function CourseEditorPage() {
             {publishing && <span className="spinner" />}
             نشر إصدار
           </button>
+          <button className="btn" onClick={() => setAnalyticsOpen(true)} title="عرض تحليلات تقدم وإكمال الطلاب">
+            📊 التحليلات
+          </button>
           <button className="btn btn-primary" onClick={() => setExportOpen(true)}>
             تصدير
           </button>
+
           <button
             className="btn btn-ghost btn-danger"
             onClick={async () => {
@@ -202,6 +209,8 @@ export default function CourseEditorPage() {
       </div>
 
       {exportOpen && <ExportDialog courseId={courseId} onClose={() => setExportOpen(false)} />}
+      {analyticsOpen && <AnalyticsModal courseId={courseId} onClose={() => setAnalyticsOpen(false)} />}
     </main>
+
   );
 }

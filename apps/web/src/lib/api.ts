@@ -1,8 +1,11 @@
 import type {
+  AiResult,
   AssetInfo,
   CatalogItem,
+  CourseAnalytics,
   CourseDetail,
   CourseSummary,
+  DiscussionItem,
   LibraryCourse,
   LibraryItem,
   Note,
@@ -62,6 +65,8 @@ export const api = {
     request<User>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
   login: (body: { login?: string; email?: string; password: string }) =>
     request<User>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
+  firebaseLogin: (body: { id_token: string; role?: string; name?: string }) =>
+    request<User>("/auth/firebase", { method: "POST", body: JSON.stringify(body) }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
   me: () => request<User>("/auth/me"),
   updateProfile: (body: {
@@ -87,7 +92,10 @@ export const api = {
     ) =>
       request<CourseDetail>(`/courses/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     remove: (id: string) => request<void>(`/courses/${id}`, { method: "DELETE" }),
+    fork: (id: string) =>
+      request<CourseDetail>(`/courses/${id}/fork`, { method: "POST" }),
     publish: (id: string) => request<VersionInfo>(`/courses/${id}/publish`, { method: "POST" }),
+
     versions: (id: string) => request<VersionInfo[]>(`/courses/${id}/versions`),
   },
 
@@ -145,7 +153,46 @@ export const api = {
         body: JSON.stringify(body),
       }),
   },
+
+  discussions: {
+    list: (courseId: string, lessonId: string) =>
+      request<DiscussionItem[]>(`/courses/${courseId}/lessons/${lessonId}/discussions`),
+    post: (courseId: string, lessonId: string, content: string, parentId?: string) =>
+      request<DiscussionItem>(`/courses/${courseId}/lessons/${lessonId}/discussions`, {
+        method: "POST",
+        body: JSON.stringify({ content, parent_id: parentId }),
+      }),
+    remove: (courseId: string, discussionId: string) =>
+      request<void>(`/courses/${courseId}/discussions/${discussionId}`, { method: "DELETE" }),
+  },
+
+  ai: {
+    generate: (body: {
+      action: "generate_quiz" | "summarize" | "explain";
+      text: string;
+      lesson_title?: string;
+      course_id?: string;
+    }) => request<AiResult>("/ai/generate", { method: "POST", body: JSON.stringify(body) }),
+  },
+
+  analytics: {
+    course: (courseId: string) => request<CourseAnalytics>(`/courses/${courseId}/analytics`),
+  },
+
+  smartImport: {
+    markdown: (title: string, markdownContent: string) =>
+      request<CourseDetail>("/courses/import-smart", {
+        method: "POST",
+        body: JSON.stringify({ title, markdown_content: markdownContent }),
+      }),
+    zip: (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return request<CourseDetail>("/courses/import-zip", { method: "POST", body: form });
+    },
+  },
 };
+
 
 /** استطلاع حالة عملية حتى تنتهي. */
 export async function waitForJob(

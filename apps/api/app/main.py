@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import assets, auth, courses, library, packages
+from app.api.routes import ai, assets, auth, courses, discussions, library, packages
 from app.core.config import settings
 from app.db.base import Base, engine
 from app.services.packages import EduPkgError
@@ -46,5 +46,6 @@ def health() -> dict:
     return {"status": "ok", "app": settings.app_name}
 
 
-for module in (auth, courses, assets, library, packages):
+for module in (auth, courses, assets, library, packages, discussions, ai):
     app.include_router(module.router, prefix=settings.api_prefix)
+

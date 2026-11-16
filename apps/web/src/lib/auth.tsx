@@ -8,6 +8,12 @@ import {
   type ReactNode,
 } from "react";
 import { api } from "./api";
+import {
+  auth,
+  googleProvider,
+  signInWithPopup,
+  firebaseSignOut,
+} from "./firebase";
 import type { User } from "./types";
 
 interface AuthState {
@@ -15,6 +21,7 @@ interface AuthState {
   loading: boolean;
   signIn: (identifier: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
+  signInWithGoogle: (role?: string) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   updateProfile: (body: {
@@ -54,8 +61,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp: async (email, password, name, role) => {
         setUser(await api.register({ email, password, name, role }));
       },
+      signInWithGoogle: async (role = "teacher") => {
+        const result = await signInWithPopup(auth, googleProvider);
+        const idToken = await result.user.getIdToken();
+        const loggedUser = await api.firebaseLogin({
+          id_token: idToken,
+          role,
+          name: result.user.displayName || undefined,
+        });
+        setUser(loggedUser);
+      },
       signOut: async () => {
         await api.logout();
+        try {
+          await firebaseSignOut(auth);
+        } catch {
+          // ignore
+        }
         setUser(null);
       },
       updateProfile: async (body) => {
