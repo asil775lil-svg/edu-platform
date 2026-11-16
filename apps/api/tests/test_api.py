@@ -233,6 +233,25 @@ def test_export_course_html(client: TestClient):
     assert "الرياضيات" in res.text
 
 
+def test_login_by_name(client: TestClient):
+    _register(client, "named_user@example.com", "أحمد علي", role="teacher")
+    res = client.post("/api/auth/login", json={"login": "أحمد علي", "password": "password123"})
+    assert res.status_code == 200
+    assert res.json()["name"] == "أحمد علي"
+
+
+def test_update_profile(client: TestClient):
+    _register(client, "profile_user@example.com", "سامي", role="teacher")
+    update_res = client.patch(
+        "/api/auth/profile",
+        json={"name": "سامي خالد", "email": "sami_new@example.com"},
+    )
+    assert update_res.status_code == 200
+    assert update_res.json()["name"] == "سامي خالد"
+    assert update_res.json()["email"] == "sami_new@example.com"
+
+
+
 
 def test_user_signing_key_lifecycle():
     from nacl.signing import SigningKey

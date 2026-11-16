@@ -13,10 +13,16 @@ import type { User } from "./types";
 interface AuthState {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (identifier: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  updateProfile: (body: {
+    name?: string;
+    email?: string;
+    current_password?: string;
+    new_password?: string;
+  }) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -42,8 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       refresh,
-      signIn: async (email, password) => {
-        setUser(await api.login({ email, password }));
+      signIn: async (identifier, password) => {
+        setUser(await api.login({ login: identifier, password }));
       },
       signUp: async (email, password, name, role) => {
         setUser(await api.register({ email, password, name, role }));
@@ -51,6 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut: async () => {
         await api.logout();
         setUser(null);
+      },
+      updateProfile: async (body) => {
+        const updated = await api.updateProfile(body);
+        setUser(updated);
+        return updated;
       },
     }),
     [user, loading, refresh],

@@ -59,10 +59,16 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const api = {
   register: (body: { email: string; password: string; name: string; role: string }) =>
     request<User>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  login: (body: { email: string; password: string }) =>
+  login: (body: { login?: string; email?: string; password: string }) =>
     request<User>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
   me: () => request<User>("/auth/me"),
+  updateProfile: (body: {
+    name?: string;
+    email?: string;
+    current_password?: string;
+    new_password?: string;
+  }) => request<User>("/auth/profile", { method: "PATCH", body: JSON.stringify(body) }),
 
   courses: {
     list: () => request<CourseSummary[]>("/courses"),

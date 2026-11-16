@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DbSession
 
 from app.api.deps import current_user
@@ -19,7 +19,7 @@ from app.core.security import (
 )
 from app.db.base import get_db
 from app.db.models import Session, User
-from app.schemas import LoginIn, RegisterIn, UserOut
+from app.schemas import LoginIn, ProfileUpdateIn, RegisterIn, UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -69,10 +69,49 @@ def register(payload: RegisterIn, response: Response, db: DbSession = Depends(ge
 
 @router.post("/login", response_model=UserOut)
 def login(payload: LoginIn, response: Response, db: DbSession = Depends(get_db)):
-    user = db.scalar(select(User).where(User.email == payload.email.lower()))
+    ident = (payload.login or payload.email or "").strip()
+    if not ident:
+        raise HTTPException(status_code=400, detail="يرجى إدخال اسم المستخدم أو البريد الإلكتروني")
+
+    user = db.scalar(
+        select(User).where(
+            or_(
+                func.lower(User.email) == ident.lower(),
+                func.lower(User.name) == ident.lower(),
+                User.name == ident,
+            )
+        )
+    )
     if user is None or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="البريد أو كلمة المرور غير صحيحة")
+        raise HTTPException(status_code=401, detail="اسم المستخدم/البريد أو كلمة المرور غير صحيحة")
     _start_session(db, user, response)
+    return user
+
+
+@router.patch("/profile", response_model=UserOut)
+def update_profile(
+    payload: ProfileUpdateIn,
+    db: DbSession = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    if payload.name is not None and payload.name.strip():
+        user.name = payload.name.strip()
+
+    if payload.email is not None and payload.email.lower() != user.email:
+        new_email = payload.email.lower()
+        conflict = db.scalar(select(User).where(User.email == new_email, User.id != user.id))
+        if conflict:
+            raise HTTPException(status_code=409, detail="البريد الإلكتروني الجديد مستخدم بالفعل")
+        user.email = new_email
+
+    if payload.new_password is not None:
+        if not payload.current_password or not verify_password(
+            payload.current_password, user.password_hash
+        ):
+            raise HTTPException(status_code=400, detail="كلمة المرور الحالية غير صحيحة")
+        user.password_hash = hash_password(payload.new_password)
+
+    db.commit()
     return user
 
 

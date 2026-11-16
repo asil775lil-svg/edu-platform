@@ -1,10 +1,12 @@
+import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import type { ReactNode } from "react";
 import { useAuth } from "../lib/auth";
+import { SettingsModal } from "./SettingsModal";
 
 export function Shell({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <>
@@ -28,13 +30,20 @@ export function Shell({ children }: { children: ReactNode }) {
           </NavLink>
         </nav>
 
-        <div className="row">
-          <div style={{ textAlign: "left" }}>
+        <div className="row" style={{ gap: "0.4rem" }}>
+          <div style={{ textAlign: "left", marginInlineEnd: "0.3rem" }}>
             <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{user?.name}</div>
             <div className="small muted">
               {user?.role === "teacher" ? "معلّم / صانع محتوى" : "طالب"}
             </div>
           </div>
+          <button
+            className="btn btn-sm btn-ghost"
+            onClick={() => setSettingsOpen(true)}
+            title="إعدادات الحساب وتغيير كلمة المرور"
+          >
+            ⚙️ الإعدادات
+          </button>
           <button
             className="btn btn-sm btn-ghost"
             onClick={async () => {
@@ -46,6 +55,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </header>
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
       {children}
     </>
   );

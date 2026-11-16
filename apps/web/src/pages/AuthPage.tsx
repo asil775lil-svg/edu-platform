@@ -92,13 +92,18 @@ export default function AuthPage() {
 
           <div>
             <label className="label" htmlFor="email">
-              البريد الإلكتروني
+              {mode === "login" ? "اسم المستخدم أو البريد الإلكتروني" : "البريد الإلكتروني"}
             </label>
             <input
               id="email"
-              className="input input-ltr"
-              type="email"
-              dir="ltr"
+              className={mode === "login" ? "input" : "input input-ltr"}
+              type={mode === "login" ? "text" : "email"}
+              dir={mode === "login" ? "auto" : "ltr"}
+              placeholder={
+                mode === "login"
+                  ? "مثال: أ. محمد أو teacher@example.com"
+                  : "name@example.com"
+              }
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
