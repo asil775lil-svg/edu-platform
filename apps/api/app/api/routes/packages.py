@@ -61,6 +61,9 @@ def export_course(
     return _out(job)
 
 
+CHUNK = 1 << 20
+
+
 @router.post("/import", response_model=JobOut, status_code=201)
 async def upload_package(
     file: UploadFile = File(...),
@@ -68,24 +71,39 @@ async def upload_package(
     db: DbSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
+    import uuid
+    from pathlib import Path
     from edupkg import EduPkgError, is_encrypted, read_public_header
 
     if posixpath.splitext(file.filename or "")[1].lower() not in {".edupkg", ".zip"}:
         raise HTTPException(status_code=415, detail="يجب رفع ملف .edupkg")
 
-    data = await file.read()
-    if len(data) > settings.max_upload_bytes:
-        raise HTTPException(status_code=413, detail="الحزمة أكبر من الحد المسموح")
+    tmp_dir = Path(settings.storage_dir) / "tmp"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    tmp_path = tmp_dir / f"pkg_{uuid.uuid4().hex}.edupkg"
+
+    size = 0
+    try:
+        with tmp_path.open("wb") as out:
+            while chunk := await file.read(CHUNK):
+                size += len(chunk)
+                if size > settings.max_upload_bytes:
+                    raise HTTPException(status_code=413, detail="الحزمة أكبر من الحد المسموح")
+                out.write(chunk)
+    except Exception:
+        tmp_path.unlink(missing_ok=True)
+        raise
 
     job = PackageJob(owner_id=user.id, kind="import", status="pending", meta={})
     db.add(job)
     db.flush()
 
     key = f"imports/{job.id}.edupkg"
-    storage.put(key, data)
+    storage.put_path(key, tmp_path)
     job.storage_key = key
 
     try:
+        data = storage.path(key).read_bytes()
         if is_encrypted(data) and not invite_code:
             header = read_public_header(data) or {}
             job.meta = {
