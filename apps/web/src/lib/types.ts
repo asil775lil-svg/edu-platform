@@ -100,6 +100,16 @@ export interface LibraryItem {
   has_update: boolean;
 }
 
+export interface CatalogItem {
+  course_id: string;
+  title: string;
+  description: string;
+  teacher_name: string;
+  total_lessons: number;
+  is_enrolled: boolean;
+  published_at: string;
+}
+
 export interface Note {
   id: string;
   lesson_id: string;

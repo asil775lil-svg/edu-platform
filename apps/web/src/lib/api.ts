@@ -1,5 +1,6 @@
 import type {
   AssetInfo,
+  CatalogItem,
   CourseDetail,
   CourseSummary,
   LibraryCourse,
@@ -101,6 +102,7 @@ export const api = {
 
   library: {
     list: () => request<LibraryItem[]>("/library"),
+    catalog: () => request<CatalogItem[]>("/library/catalog"),
     enroll: (course_id: string) =>
       request<{ enrollment_id: string; already: boolean }>("/library/enroll", {
         method: "POST",

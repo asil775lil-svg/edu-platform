@@ -75,6 +75,46 @@ def my_library(db: DbSession = Depends(get_db), user: User = Depends(current_use
     return items
 
 
+@router.get("/catalog")
+def course_catalog(db: DbSession = Depends(get_db), user: User = Depends(current_user)):
+    """عرض كافة المواد المنشورة على المنصة لتمكين الطلاب من استكشافها والاشتراك بها مباشرة."""
+    rows = db.execute(
+        select(Course, User.name)
+        .join(User, User.id == Course.owner_id)
+        .where(Course.published_version_id.is_not(None))
+        .order_by(Course.updated_at.desc())
+    ).all()
+
+    enrolled_ids = set(
+        db.scalars(
+            select(Enrollment.course_id).where(Enrollment.user_id == user.id)
+        ).all()
+    )
+
+    items = []
+    for course, teacher_name in rows:
+        total = (
+            db.scalar(
+                select(func.count(LessonIndex.id)).where(
+                    LessonIndex.version_id == course.published_version_id
+                )
+            )
+            or 0
+        )
+        items.append(
+            {
+                "course_id": course.id,
+                "title": course.title,
+                "description": course.description,
+                "teacher_name": teacher_name,
+                "total_lessons": total,
+                "is_enrolled": course.id in enrolled_ids,
+                "published_at": course.updated_at,
+            }
+        )
+    return items
+
+
 @router.post("/enroll", status_code=201)
 def enroll(
     payload: EnrollIn, db: DbSession = Depends(get_db), user: User = Depends(current_user)

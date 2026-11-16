@@ -251,6 +251,22 @@ def test_update_profile(client: TestClient):
     assert update_res.json()["email"] == "sami_new@example.com"
 
 
+def test_course_catalog(client: TestClient):
+    course = _course_with_content(client)
+    client.post(f"/api/courses/{course['id']}/publish")
+    student = TestClient(app)
+    _register(student, "catalog_student@example.com", "طالب الدليل", role="student")
+    catalog_res = student.get("/api/library/catalog")
+    assert catalog_res.status_code == 200
+    catalog = catalog_res.json()
+    assert len(catalog) >= 1
+    found = next((c for c in catalog if c["course_id"] == course["id"]), None)
+    assert found is not None
+    assert found["title"] == "الرياضيات"
+    assert found["is_enrolled"] is False
+
+
+
 
 
 def test_user_signing_key_lifecycle():

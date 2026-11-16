@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "../components/Modal";
 import { ApiError, api } from "../lib/api";
-import type { LibraryItem, PackageJob } from "../lib/types";
+import type { CatalogItem, LibraryItem, PackageJob } from "../lib/types";
 
 export default function LibraryPage() {
   const navigate = useNavigate();
+  const [tab, setTab] = useState<"my_courses" | "explore">("my_courses");
   const [items, setItems] = useState<LibraryItem[] | null>(null);
+  const [catalog, setCatalog] = useState<CatalogItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [job, setJob] = useState<PackageJob | null>(null);
@@ -16,7 +18,12 @@ export default function LibraryPage() {
 
   async function load() {
     try {
-      setItems(await api.library.list());
+      const [myItems, allCourses] = await Promise.all([
+        api.library.list(),
+        api.library.catalog(),
+      ]);
+      setItems(myItems);
+      setCatalog(allCourses);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "تعذّر تحميل الحقيبة");
     }
@@ -25,6 +32,18 @@ export default function LibraryPage() {
   useEffect(() => {
     load();
   }, []);
+
+  async function handleEnroll(courseId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.library.enroll(courseId);
+      navigate(`/library/${courseId}`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "فشل الانضمام للمادة");
+      setBusy(false);
+    }
+  }
 
   async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -67,64 +86,135 @@ export default function LibraryPage() {
 
   return (
     <main className="page">
-      <div className="between" style={{ marginBottom: "1.3rem", flexWrap: "wrap" }}>
+      <div className="between" style={{ marginBottom: "1.3rem", flexWrap: "wrap", gap: "0.8rem" }}>
         <div>
-          <h1 className="page-title">حقيبتي الدراسية</h1>
+          <h1 className="page-title">الحقيبة الدراسية</h1>
           <p className="page-sub" style={{ marginBottom: 0 }}>
-            موادك المشترك بها وتقدّمك فيها. استورد حزمة جديدة للبدء.
+            تصفح موادك المشترك بها، أو انضم لمواد المعلمين المنشورة على المنصة.
           </p>
         </div>
         <div className="row">
           <input ref={fileInput} type="file" accept=".edupkg,.zip" hidden onChange={onPick} />
           <button className="btn btn-primary" onClick={() => fileInput.current?.click()} disabled={busy}>
-            {busy ? <span className="spinner" /> : "⬆"} استيراد حزمة
+            {busy ? <span className="spinner" /> : "⬆"} استيراد حزمة من معلّم
           </button>
         </div>
       </div>
 
+      <div className="nav" style={{ marginBottom: "1.4rem", width: "fit-content" }}>
+        <button
+          type="button"
+          className={`btn btn-sm btn-ghost ${tab === "my_courses" ? "btn-primary" : ""}`}
+          onClick={() => setTab("my_courses")}
+        >
+          🎒 موادي المشترك بها ({items?.length ?? 0})
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm btn-ghost ${tab === "explore" ? "btn-primary" : ""}`}
+          onClick={() => setTab("explore")}
+        >
+          🌐 استكشاف المواد المنشورة ({catalog?.length ?? 0})
+        </button>
+      </div>
+
       {error && <div className="alert alert-error" style={{ marginBottom: "1rem" }}>{error}</div>}
 
-      {items === null ? (
-        <div className="empty">جارٍ التحميل…</div>
-      ) : items.length === 0 ? (
-        <div className="empty">
-          <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🎒</div>
-          حقيبتك فارغة. استورد حزمة <code>.edupkg</code> من معلّمك للبدء.
-        </div>
-      ) : (
-        <div className="course-grid">
-          {items.map((item) => {
-            const percent =
-              item.total_lessons === 0
-                ? 0
-                : Math.round((item.completed_lessons / item.total_lessons) * 100);
-            return (
-              <article className="card course-card" key={item.course_id}>
-                <div className="between">
-                  <span className={`badge ${percent === 100 ? "badge-green" : ""}`}>
-                    {percent === 100 ? "مكتمل" : `${percent}%`}
-                  </span>
-                  {item.has_update && <span className="badge badge-amber">تحديث متاح</span>}
-                </div>
-                <h3>{item.title}</h3>
-                <p className="muted small" style={{ margin: 0, flex: 1 }}>
-                  {item.description || "بدون وصف"}
-                </p>
-                <div className="progressbar">
-                  <span style={{ width: `${percent}%` }} />
-                </div>
-                <div className="course-meta">
-                  <span>
-                    {item.completed_lessons} / {item.total_lessons} درس
-                  </span>
-                </div>
-                <Link className="btn btn-sm btn-primary" to={`/library/${item.course_id}`}>
-                  متابعة الدراسة
-                </Link>
-              </article>
-            );
-          })}
-        </div>
+      {tab === "my_courses" && (
+        <>
+          {items === null ? (
+            <div className="empty">جارٍ التحميل…</div>
+          ) : items.length === 0 ? (
+            <div className="empty">
+              <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🎒</div>
+              حقيبتك فارغة حالياً.
+              <div style={{ marginTop: "0.6rem" }}>
+                <button className="btn btn-sm btn-primary" onClick={() => setTab("explore")}>
+                  استكشف المواد المنشورة الآن
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="course-grid">
+              {items.map((item) => {
+                const percent =
+                  item.total_lessons === 0
+                    ? 0
+                    : Math.round((item.completed_lessons / item.total_lessons) * 100);
+                return (
+                  <article className="card course-card" key={item.course_id}>
+                    <div className="between">
+                      <span className={`badge ${percent === 100 ? "badge-green" : ""}`}>
+                        {percent === 100 ? "مكتمل" : `${percent}%`}
+                      </span>
+                      {item.has_update && <span className="badge badge-amber">تحديث متاح</span>}
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p className="muted small" style={{ margin: 0, flex: 1 }}>
+                      {item.description || "بدون وصف"}
+                    </p>
+                    <div className="progressbar">
+                      <span style={{ width: `${percent}%` }} />
+                    </div>
+                    <div className="course-meta">
+                      <span>
+                        {item.completed_lessons} / {item.total_lessons} درس
+                      </span>
+                    </div>
+                    <Link className="btn btn-sm btn-primary" to={`/library/${item.course_id}`}>
+                      متابعة الدراسة
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === "explore" && (
+        <>
+          {catalog === null ? (
+            <div className="empty">جارٍ تحميل دليل المواد…</div>
+          ) : catalog.length === 0 ? (
+            <div className="empty">لا توجد مواد منشورة حتى الآن على المنصة.</div>
+          ) : (
+            <div className="course-grid">
+              {catalog.map((item) => (
+                <article className="card course-card" key={item.course_id}>
+                  <div className="between">
+                    <span className="badge badge-green">منشورة ✓</span>
+                    <span className="small muted">بواسطة: {item.teacher_name}</span>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p className="muted small" style={{ margin: 0, flex: 1 }}>
+                    {item.description || "بدون وصف"}
+                  </p>
+                  <div className="course-meta" style={{ marginTop: "0.8rem" }}>
+                    <span>📚 {item.total_lessons} درس</span>
+                  </div>
+                  {item.is_enrolled ? (
+                    <Link
+                      className="btn btn-sm"
+                      style={{ background: "rgba(16, 185, 129, 0.15)", color: "#6ee7b7", borderColor: "rgba(16, 185, 129, 0.35)" }}
+                      to={`/library/${item.course_id}`}
+                    >
+                      ✓ مشترك بالفعل — دراسة
+                    </Link>
+                  ) : (
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleEnroll(item.course_id)}
+                      disabled={busy}
+                    >
+                      + انضمام ودراسة المادة
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {codeOpen && job && (
