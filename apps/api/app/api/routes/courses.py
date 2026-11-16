@@ -70,6 +70,14 @@ def update_course(
     user: User = Depends(current_user),
 ):
     course = owned_course(db, course_id, user)
+    if payload.expected_updated_at is not None and course.updated_at:
+        server_ts = course.updated_at.timestamp()
+        client_ts = payload.expected_updated_at.timestamp()
+        if server_ts - client_ts > 1.0:
+            raise HTTPException(
+                status_code=409,
+                detail="تم تعديل المسودة في جلسة أخرى. حدّث الصفحة لتجنب فقدان التعديلات.",
+            )
     if payload.title is not None:
         course.title = payload.title.strip()
         course.draft = {**course.draft, "title": course.title}

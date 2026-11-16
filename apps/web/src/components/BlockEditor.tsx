@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { ApiError, api } from "../lib/api";
 import { defaultBlock, moveBlock } from "../lib/draft";
-import type { Block, BlockType, Lesson } from "../lib/types";
+import type { Block, BlockType, CalloutVariant, Lesson } from "../lib/types";
 import { useAssetUrl } from "../lib/useAssets";
 import { RichText } from "./RichText";
 
@@ -139,6 +139,13 @@ export function BlockEditor({
                 onChange={(changes) => patch(block.id, changes)}
               />
             )}
+
+            {block.type === "callout" && (
+              <CalloutBlock
+                block={block}
+                onChange={(changes) => patch(block.id, changes)}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -149,6 +156,9 @@ export function BlockEditor({
         </button>
         <button className="btn btn-sm" onClick={() => add("heading")}>
           + عنوان
+        </button>
+        <button className="btn btn-sm" onClick={() => add("callout")}>
+          + تنبيه
         </button>
         <button className="btn btn-sm" onClick={() => add("image")}>
           + صورة
@@ -263,6 +273,60 @@ function QuizBlock({
       >
         + خيار
       </button>
+    </div>
+  );
+}
+
+function CalloutBlock({
+  block,
+  onChange,
+}: {
+  block: Block;
+  onChange: (changes: Partial<Block>) => void;
+}) {
+  const variant = block.calloutVariant ?? "tip";
+  const badges: Record<CalloutVariant, { label: string; cls: string }> = {
+    info: { label: "معلومة", cls: "badge-blue" },
+    tip: { label: "تلميح", cls: "badge-green" },
+    warning: { label: "تنبيه", cls: "badge-amber" },
+    danger: { label: "تحذير هام", cls: "badge-red" },
+  };
+
+  return (
+    <div className={`card card-flat callout-box callout-${variant}`} style={{ gap: "0.5rem" }}>
+      <div className="between" style={{ flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.3rem" }}>
+        <div className="row" style={{ gap: "0.4rem" }}>
+          <select
+            className="input input-sm"
+            style={{ width: "auto" }}
+            value={variant}
+            onChange={(e) => onChange({ calloutVariant: e.target.value as CalloutVariant })}
+          >
+            <option value="tip">💡 تلميح</option>
+            <option value="info">ℹ️ معلومة</option>
+            <option value="warning">⚠️ تنبيه</option>
+            <option value="danger">🛑 تحذير</option>
+          </select>
+          <span className={`badge ${badges[variant]?.cls ?? "badge-green"}`}>
+            {badges[variant]?.label}
+          </span>
+        </div>
+        <input
+          className="input input-sm"
+          style={{ fontWeight: 700, flex: 1, minWidth: 160 }}
+          placeholder="عنوان التنبيه"
+          value={block.calloutTitle ?? ""}
+          onChange={(e) => onChange({ calloutTitle: e.target.value })}
+        />
+      </div>
+      <textarea
+        className="textarea"
+        style={{ minHeight: 60 }}
+        placeholder="نص التنبيه أو الملاحظة…"
+        value={block.text ?? ""}
+        onChange={(e) => onChange({ text: e.target.value })}
+        dir="auto"
+      />
     </div>
   );
 }

@@ -50,13 +50,20 @@ export default function CourseEditorPage() {
     setSaveState("saving");
     const timer = setTimeout(async () => {
       try {
-        await api.courses.update(courseId, {
+        const updated = await api.courses.update(courseId, {
           title: draft.title,
           description: draft.description,
           draft,
+          expected_updated_at: course?.updated_at,
         });
+        setCourse(updated);
         setSaveState("saved");
-      } catch {
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 409) {
+          setError(
+            "تنبيه: تم تعديل المادة من جلسة أو تبويب آخر. أعد تحميل الصفحة لتفادي الكتابة فوق التعديلات.",
+          );
+        }
         setSaveState("error");
       }
     }, 700);

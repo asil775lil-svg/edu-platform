@@ -106,6 +106,14 @@ export function defaultBlock(type: BlockType): Block {
         choices: ["الخيار الأول", "الخيار الثاني"],
         answerIndex: 0,
       };
+    case "callout":
+      return {
+        id,
+        type,
+        calloutVariant: "tip",
+        calloutTitle: "ملاحظة مهمة",
+        text: "اكتب التنبيه أو الملاحظة هنا…",
+      };
     case "video":
       return { id, type, assetSha256: "", caption: "" };
     case "audio":

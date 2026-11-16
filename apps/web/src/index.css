@@ -180,6 +180,16 @@ pre {
   color: #fcd34d;
   border-color: rgba(245, 158, 11, 0.35);
 }
+.badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+.badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.35);
+}
 .muted {
   color: var(--muted);
 }
@@ -592,6 +602,29 @@ pre {
   border-color: rgba(59, 130, 246, 0.4);
   background: rgba(59, 130, 246, 0.08);
   color: #bfdbfe;
+}
+
+/* ---------- صندوق التنبيه والإضاءة التعليمية ---------- */
+.callout-box {
+  border-inline-start: 4px solid var(--primary);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.callout-tip {
+  border-inline-start-color: var(--green);
+  background: rgba(16, 185, 129, 0.07);
+}
+.callout-info {
+  border-inline-start-color: var(--primary);
+  background: rgba(59, 130, 246, 0.07);
+}
+.callout-warning {
+  border-inline-start-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+.callout-danger {
+  border-inline-start-color: var(--danger);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 /* ---------- شاشة الدخول ---------- */

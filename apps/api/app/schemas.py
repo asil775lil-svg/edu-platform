@@ -45,6 +45,7 @@ class CourseUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
     description: str | None = None
     draft: dict[str, Any] | None = None
+    expected_updated_at: datetime | None = None
 
 
 class CourseOut(BaseModel):

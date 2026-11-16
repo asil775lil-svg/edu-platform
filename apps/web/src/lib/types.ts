@@ -19,7 +19,9 @@ export interface CourseSummary {
   updated_at: string;
 }
 
-export type BlockType = "heading" | "text" | "image" | "video" | "audio" | "quiz";
+export type BlockType = "heading" | "text" | "image" | "video" | "audio" | "quiz" | "callout";
+
+export type CalloutVariant = "info" | "warning" | "tip" | "danger";
 
 export interface ProseDoc {
   type: "doc";
@@ -40,6 +42,8 @@ export interface Block {
   question?: string;
   choices?: string[];
   answerIndex?: number;
+  calloutVariant?: CalloutVariant;
+  calloutTitle?: string;
 }
 
 export interface Lesson {

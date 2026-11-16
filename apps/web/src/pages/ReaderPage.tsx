@@ -212,6 +212,9 @@ function ReadBlock({ block }: { block: Block }) {
   if (block.type === "image" || block.type === "video" || block.type === "audio") {
     return <ReadMedia block={block} />;
   }
+  if (block.type === "callout") {
+    return <ReadCallout block={block} />;
+  }
   if (block.type === "quiz") {
     return <ReadQuiz block={block} />;
   }
@@ -230,6 +233,34 @@ function ReadMedia({ block }: { block: Block }) {
         <figcaption className="small muted">{block.caption || block.alt}</figcaption>
       )}
     </figure>
+  );
+}
+
+function ReadCallout({ block }: { block: Block }) {
+  const variant = block.calloutVariant ?? "tip";
+  const badges: Record<string, { label: string; cls: string; icon: string }> = {
+    info: { label: "معلومة", cls: "badge-blue", icon: "ℹ️" },
+    tip: { label: "تلميح", cls: "badge-green", icon: "💡" },
+    warning: { label: "تنبيه", cls: "badge-amber", icon: "⚠️" },
+    danger: { label: "تحذير هام", cls: "badge-red", icon: "🛑" },
+  };
+  const info = badges[variant] ?? badges.tip;
+
+  return (
+    <div className={`card card-flat callout-box callout-${variant}`} style={{ margin: "1rem 0" }}>
+      <div className="row" style={{ gap: "0.5rem", marginBottom: "0.4rem" }}>
+        <span>{info.icon}</span>
+        <span className={`badge ${info.cls}`}>{info.label}</span>
+        {block.calloutTitle && (
+          <strong style={{ fontSize: "0.95rem" }} dir="auto">
+            {block.calloutTitle}
+          </strong>
+        )}
+      </div>
+      <p style={{ margin: 0, whiteSpace: "pre-line", lineHeight: 1.65 }} dir="auto">
+        {block.text}
+      </p>
+    </div>
   );
 }
 

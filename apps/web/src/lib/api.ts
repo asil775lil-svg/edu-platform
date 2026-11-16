@@ -69,7 +69,15 @@ export const api = {
     create: (body: { title: string; description?: string }) =>
       request<CourseDetail>("/courses", { method: "POST", body: JSON.stringify(body) }),
     get: (id: string) => request<CourseDetail>(`/courses/${id}`),
-    update: (id: string, body: { title?: string; description?: string; draft?: unknown }) =>
+    update: (
+      id: string,
+      body: {
+        title?: string;
+        description?: string;
+        draft?: unknown;
+        expected_updated_at?: string;
+      },
+    ) =>
       request<CourseDetail>(`/courses/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     remove: (id: string) => request<void>(`/courses/${id}`, { method: "DELETE" }),
     publish: (id: string) => request<VersionInfo>(`/courses/${id}/publish`, { method: "POST" }),
