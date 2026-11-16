@@ -1,0 +1,672 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   نظام التصميم — مستوحى من مخطط المنصة (داكن، أزرق/زمردي/بنفسجي)
+   ========================================================================== */
+:root {
+  --bg: #0b1220;
+  --bg-soft: #0f172a;
+  --card: #172033;
+  --card-2: #1e293b;
+  --border: #2b3a52;
+  --primary: #3b82f6;
+  --primary-soft: rgba(59, 130, 246, 0.15);
+  --green: #10b981;
+  --green-soft: rgba(16, 185, 129, 0.14);
+  --purple: #8b5cf6;
+  --amber: #f59e0b;
+  --danger: #ef4444;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --radius: 14px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 100% -10%, #1b2c52 0%, transparent 55%),
+    radial-gradient(900px 500px at 0% 0%, #10233a 0%, transparent 45%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "Noto Naskh Arabic", "Noto Sans Arabic", Tahoma, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* الكود في أي مكان: خط ثابت وعزل اتجاهي. */
+code,
+kbd,
+samp,
+pre {
+  font-family: Consolas, "Cascadia Mono", monospace;
+  unicode-bidi: isolate;
+}
+
+/* ---------- عناصر عامة ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  border-color: var(--primary);
+  background: #22304a;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #2f6fd4;
+}
+.btn-green {
+  background: var(--green);
+  border-color: var(--green);
+  color: #062b20;
+}
+.btn-ghost {
+  background: transparent;
+}
+.btn-sm {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+.btn-danger:hover {
+  border-color: var(--danger);
+  color: #fca5a5;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+}
+.card-flat {
+  background: rgba(23, 32, 51, 0.55);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0e1729;
+  color: var(--text);
+  outline: none;
+  transition: 0.15s;
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+.label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--primary-soft);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+}
+.badge-green {
+  background: var(--green-soft);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.badge-amber {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.85rem;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.stack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+/* ---------- الهيكل ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1.5rem;
+  background: rgba(11, 18, 32, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 800;
+  /* لا تباعد بين حروف العربية: يكسر وصل الكلمات. */
+  letter-spacing: normal;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  font-size: 1.05rem;
+}
+.nav {
+  display: flex;
+  gap: 0.35rem;
+  background: #0d1626;
+  padding: 0.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.nav a {
+  padding: 0.4rem 0.9rem;
+  border-radius: 9px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.nav a.active {
+  background: var(--primary-soft);
+  color: #bfdbfe;
+}
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.6rem 1.5rem 5rem;
+}
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.2rem;
+}
+.page-sub {
+  color: var(--muted);
+  margin: 0 0 1.4rem;
+  font-size: 0.95rem;
+}
+
+/* ---------- بطاقات المواد ---------- */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.course-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 158px;
+  transition: 0.18s ease;
+}
+.course-card:hover {
+  transform: translateY(-2px);
+  border-color: #3d5580;
+  box-shadow: var(--shadow);
+}
+.course-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.course-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* ---------- محرر ---------- */
+.editor-grid {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 1.1rem;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.tree {
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  padding-inline-start: 0.2rem;
+}
+.tree-unit {
+  margin-bottom: 0.5rem;
+}
+.tree-unit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.6rem;
+  background: #131d31;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.tree-lesson {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  margin-top: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  text-align: start;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+.tree-lesson:hover {
+  background: #16223a;
+  color: var(--text);
+}
+.tree-lesson.active {
+  background: var(--primary-soft);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #dbeafe;
+}
+.tree-lesson.done::after {
+  content: "✓";
+  color: var(--green);
+  font-weight: 800;
+}
+
+.block-list {
+  display: grid;
+  gap: 0.8rem;
+}
+.block {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #131c2e;
+  padding: 0.85rem 1rem;
+}
+.block:hover {
+  border-color: #3a4f73;
+}
+.block-tools {
+  position: absolute;
+  top: 0.4rem;
+  /* في RTL تقع الأدوات في الطرف المقابل لبداية النص. */
+  inset-inline-end: 0.4rem;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: 0.15s;
+}
+.block:hover .block-tools {
+  opacity: 1;
+}
+.icon-btn {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: #0e1729;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--primary);
+}
+.add-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+/* ---------- محرر النص (ProseMirror) ---------- */
+.prose {
+  outline: none;
+  min-height: 46px;
+}
+.prose p {
+  margin: 0 0 0.5rem;
+}
+.prose p:last-child {
+  margin-bottom: 0;
+}
+.prose h2,
+.prose h3 {
+  margin: 0 0 0.4rem;
+}
+.prose ul,
+.prose ol {
+  padding-inline-start: 1.4rem;
+  margin: 0.3rem 0;
+}
+.prose blockquote {
+  border-inline-start: 3px solid var(--primary);
+  padding-inline-start: 0.8rem;
+  color: var(--muted);
+  margin: 0.4rem 0;
+}
+/* ---------- النص المختلط: عربي + كود + روابط ---------- */
+/* الكود معزول LTR حتى لا يقلب المحرف العربي ترتيب رموزه ({} و // و =). */
+.prose code,
+.reader-body code {
+  direction: ltr;
+  unicode-bidi: isolate;
+  background: #0b1322;
+  padding: 0.1rem 0.35rem;
+  border-radius: 5px;
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: 0.9em;
+}
+.prose pre,
+.reader-body pre {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+  background: #0b1322;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.prose pre code,
+.reader-body pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+/* الروابط تُعزل كوحدة واحدة كي لا تتبدّل مواضع النقاط والأقواس حولها. */
+.prose a,
+.reader-body a {
+  unicode-bidi: isolate;
+  color: #93c5fd;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(147, 197, 253, 0.4);
+}
+.prose a:hover,
+.reader-body a:hover {
+  text-decoration-color: currentColor;
+}
+/* اتجاه كل فقرة من أول حرف قوي — احتياط للمحتوى المستورد بلا سمات dir.
+   مقتصر على وضع القراءة (prose-read) حتى لا يقفز اتجاه المؤشر داخل المحرر. */
+.prose-read p,
+.prose-read h2,
+.prose-read h3,
+.prose-read li,
+.prose-read blockquote,
+.reader-body p,
+.reader-body h2,
+.reader-body h3,
+.reader-body li,
+.reader-body figcaption {
+  unicode-bidi: plaintext;
+}
+
+/* حقول تقنية (بريد، رمز دعوة، بصمة، اسم ملف) تُكتب LTR وتُحاذى لليسار. */
+.input-ltr,
+.bidi-ltr {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #64748b;
+  float: right;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ---------- القراءة ---------- */
+.reader-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.1rem;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .reader-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.reader-body {
+  font-size: 1.02rem;
+  line-height: 1.95;
+}
+.reader-body img,
+.reader-body video {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 0.5rem 0;
+}
+.progressbar {
+  height: 8px;
+  border-radius: 999px;
+  background: #0e1729;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progressbar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #34d399);
+}
+
+/* ---------- حوارات ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 16, 0.7);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 50;
+}
+.modal {
+  width: min(520px, 100%);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.4rem;
+  box-shadow: var(--shadow);
+  max-height: 90vh;
+  overflow: auto;
+}
+
+/* ---------- تنبيهات ---------- */
+.alert {
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  background: #131d31;
+}
+.alert-error {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+.alert-success {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.1);
+  color: #6ee7b7;
+}
+.alert-info {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.08);
+  color: #bfdbfe;
+}
+
+/* ---------- شاشة الدخول ---------- */
+.auth-wrap {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+}
+.auth-card {
+  width: min(430px, 100%);
+  padding: 1.8rem;
+}
+.auth-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  margin-bottom: 0.9rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 2.6rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* شريط أدوات الكتلة */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0e1729;
+  margin-bottom: 0.5rem;
+}
+.toolbar button {
+  min-width: 30px;
+  height: 28px;
+  padding: 0 0.45rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.toolbar button:hover {
+  background: #1b2941;
+  color: var(--text);
+}
+.toolbar button.on {
+  background: var(--primary-soft);
+  color: #bfdbfe;
+  border-color: rgba(59, 130, 246, 0.35);
+}
