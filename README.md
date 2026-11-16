@@ -32,20 +32,26 @@
 
 ## التشغيل السريع
 
+### تشغيل بنقرة واحدة (Windows):
+- انقر نقراً مزدوجاً على ملف **`start.bat`** في المجلد الرئيسي، أو نفّذ في الطرفية:
 ```powershell
-# 1) الخادم (مرة واحدة)
+.\start.bat
+# أو عبر PowerShell:
+.\scripts\start.ps1
+```
+يقوم السكربت تلقائياً بفحص البيئة، وتطبيق هجرات قاعدة البيانات (Alembic)، وتشغيل خادم الـ API وخادم الواجهة معاً، وفتح المتصفح تلقائياً.
+
+### تشغيل بيئة التطوير يدوياً:
+```powershell
+# 1) الخادم
 cd apps\api
-python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e "..\..\packages\pkg" -e ".[dev]"
+alembic upgrade head
+python -m uvicorn app.main:app --reload --port 8010
 
-# 2) الواجهة (مرة واحدة)
+# 2) الواجهة
 cd ..\web
-npm install
-
-# 3) التشغيل معاً من جذر المشروع
-cd ..\..
-.\scripts\dev.ps1
+npm run dev
 ```
 
 - الواجهة: <http://localhost:5173>
