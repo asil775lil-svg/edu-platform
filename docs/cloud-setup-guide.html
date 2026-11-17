@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدليل الشامل للربط السحابي، النشر، والتحديث التلقائي | منظومة التعليم الذكية</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #60a5fa;
+      --secondary: #0ea5e9;
+      --accent: #10b981;
+      --bg-dark: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --card-hover: #1e293b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --code-bg: #030712;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.8;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(14,165,233,0.08) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid var(--primary-light);
+      color: var(--primary-light);
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(to left, #60a5fa, #38bdf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    /* Quick Links Box */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .link-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .link-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.3);
+    }
+
+    .link-card .title {
+      font-weight: 700;
+      color: var(--primary-light);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .link-card .url {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      word-break: break-all;
+      direction: ltr;
+      text-align: right;
+    }
+
+    /* Section Styling */
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .step-num {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 1.45rem;
+      color: #fff;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      color: var(--primary-light);
+      margin: 1.5rem 0 0.8rem;
+    }
+
+    p, li {
+      color: #d1d5db;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+
+    ul, ol {
+      padding-right: 1.8rem;
+      margin-bottom: 1.2rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid #1f293d;
+      border-radius: 10px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      direction: ltr;
+      text-align: left;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #38bdf8;
+      margin: 1rem 0;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: rgba(255,255,255,0.07);
+      padding: 0.2rem 0.45rem;
+      border-radius: 5px;
+      color: #f472b6;
+      font-size: 0.88rem;
+      direction: ltr;
+      display: inline-block;
+    }
+
+    /* Callout Alerts */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      margin: 1.2rem 0;
+      border-right: 4px solid;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .alert-success {
+      border-color: var(--accent);
+      background: rgba(16, 185, 129, 0.08);
+      color: #a7f3d0;
+    }
+
+    .alert-warning {
+      border-color: var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fde68a;
+    }
+
+    .alert-info {
+      border-color: var(--secondary);
+      background: rgba(14, 165, 233, 0.08);
+      color: #bae6fd;
+    }
+
+    /* Steps Flow Visual */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      align-items: flex-start;
+    }
+
+    .step-circle {
+      background: var(--card-border);
+      color: var(--primary-light);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Architecture Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      border: 1px solid var(--card-border);
+      padding: 0.85rem 1rem;
+      text-align: right;
+    }
+
+    th {
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--primary-light);
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--card-border);
+      margin-top: 3rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="badge">دليل الإعداد والتشغيل السحابي v1.0</div>
+    <h1>منظومة التعليم الذكية (.edupkg)</h1>
+    <p class="subtitle">التوثيق الهندسي الشامل لجميع خطوات الربط السحابي مع Firebase، النشر العالمي، التوثيق في محرك بحث Google، والتحديث التلقائي المستمر عبر GitHub و Google Drive.</p>
+  </header>
+
+  <!-- Quick Info Links -->
+  <div class="links-grid">
+    <a href="https://edu-platform-ye.netlify.app" target="_blank" class="link-card">
+      <div class="title">🌐 الواجهة العامة (Netlify)</div>
+      <div class="url">https://edu-platform-ye.netlify.app</div>
+    </a>
+    <a href="https://edu-platform-67ju.onrender.com/docs" target="_blank" class="link-card">
+      <div class="title">📡 الخادم السحابي (Render API)</div>
+      <div class="url">https://edu-platform-67ju.onrender.com/docs</div>
+    </a>
+    <a href="https://github.com/asil775lil-svg/edu-platform" target="_blank" class="link-card">
+      <div class="title">🐙 مستودع الكود (GitHub)</div>
+      <div class="url">asil775lil-svg/edu-platform</div>
+    </a>
+    <a href="https://console.firebase.google.com/project/smart-education-ed253" target="_blank" class="link-card">
+      <div class="title">🔥 مشروع السحابة (Firebase)</div>
+      <div class="url">smart-education-ed253</div>
+    </a>
+  </div>
+
+  <!-- Table of Architecture -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">★</div>
+      <div>
+        <h2>نظرة عامة على البنية السحابية الحالية</h2>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>المكوّن</th>
+          <th>التقنية المستخدمة</th>
+          <th>الاستضافة السحابية</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>واجهة المستخدم (Frontend)</strong></td>
+          <td>React 19 + TypeScript + Vite + Tailwind</td>
+          <td>Netlify Global Edge CDN</td>
+          <td>✅ تعمل أونلاين 24/7</td>
+        </tr>
+        <tr>
+          <td><strong>الخادم البرمجي (Backend)</strong></td>
+          <td>FastAPI (Python 3.11) + SQLAlchemy + Alembic</td>
+          <td>Render Cloud Web Service (Docker)</td>
+          <td>✅ يعمل أونلاين 24/7</td>
+        </tr>
+        <tr>
+          <td><strong>المصادقة والمستخدمين (Auth)</strong></td>
+          <td>Firebase Authentication (Google + Email)</td>
+          <td>Google Identity Platform</td>
+          <td>✅ مربوط ومُفعّل</td>
+        </tr>
+        <tr>
+          <td><strong>فهرسة محركات البحث (SEO)</strong></td>
+          <td>Sitemap XML + Meta Tags + Verification</td>
+          <td>Google Search Console</td>
+          <td>✅ تم إثبات الملكية وتفعيل الأرشفة</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PHASE 1: Firebase Setup -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">1</div>
+      <div>
+        <h2>المرحلة الأولى: تهيئة وربط Firebase (المصادقة السحابية)</h2>
+      </div>
+    </div>
+    <p>تم ربط المنصة بمشروع Firebase الرسمي لتأمين تسجيل الدخول، وحماية الجلسات، وتوفير الدخول بنقرة واحدة عبر Google:</p>
+
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <strong>إنشاء مشروع Firebase</strong>
+          تم الدخول إلى Firebase Console وإنشاء مشروع يحمل المعرّف: <code>smart-education-ed253</code>.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <strong>تفعيل مزودي تسجيل الدخول (Sign-in Providers)</strong>
+          من لوحة Firebase ➔ Authentication ➔ تم تفعيل:
+          <ul style="margin: 0.5rem 1rem 0;">
+            <li><strong>Email/Password:</strong> لتسجيل المعلمين والطلاب بالبريد وكلمة السر.</li>
+            <li><strong>Google:</strong> لتسجيل الدخول الفوري بضغطة زر دون ملء استمارات.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <strong>استخراج وتصحيح المفاتيح السحابية (firebaseConfig)</strong>
+          تم ربط المفاتيح المدققة هندسياً في الواجهة بملف <code>apps/web/src/lib/firebase.ts</code>:
+<pre>const firebaseConfig = {
+  apiKey: "AIzaSyD2XQ_7uIOk6R1w1MFtc5l8TXW16Xaif8c", // مدقق مع سيرفرات Google
+  authDomain: "smart-education-ed253.firebaseapp.com",
+  projectId: "smart-education-ed253",
+  storageBucket: "smart-education-ed253.firebasestorage.app",
+  messagingSenderId: "981195951450",
+  appId: "1:981195951450:web:9f1c9518cfdbcfd0c47763",
+  measurementId: "G-M6PP83HH9K"
+};</pre>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div class="step-content">
+          <strong>التحقق السحابي في الخادم (FastAPI Backend Verification)</strong>
+          تم بناء وحدة <code>app/core/firebase.py</code> لجلب شهادات Google العامة الرقمية تلقائياً من:
+          <code>https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com</code>
+          والتحقق المشفر من صحة رمز المستخدم (ID Token) وتوليد مفاتيح التوقيع الرقمية المشفرة (Ed25519) له فوراً.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2: Frontend Deployment -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">2</div>
+      <div>
+        <h2>المرحلة الثانية: نشر الواجهة العالمية على Netlify</h2>
+      </div>
+    </div>
+    <p>تم تحويل الواجهة من العمل المحلي <code>localhost</code> إلى شبكة توزيع محتوى سحابية سريعة:</p>
+
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <strong>بناء نسخة الإنتاج (Production Build)</strong>
+          تنفيذ أمر: <code>npm run build</code> داخل مجلد <code>apps/web</code>، والذي يولد الملفات المحسنة في <code>apps/web/dist</code>.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <strong>النشر بنقرة واحدة (Netlify Drop)</strong>
+          سحب مجلد <code>apps/web/dist</code> وإفلاته في Netlify.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <strong>تخصيص النطاق وإتاحته للعامة</strong>
+          تغيير الاسم من الرابط العشوائي إلى الرابط الرسمي:
+          <code>https://edu-platform-ye.netlify.app</code> وجعل صلاحية الوصول <strong>Public</strong>.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div class="step-content">
+          <strong>إعداد التوجيه السحابي (_redirects)</strong>
+          إنشاء ملف <code>apps/web/public/_redirects</code> لربط طلبات الواجهة بالخادم السحابي دون مشاكل CORS:
+<pre>/api/*  https://edu-platform-67ju.onrender.com/api/:splat  200
+/*      /index.html                                       200</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3: Backend Cloud Deployment -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">3</div>
+      <div>
+        <h2>المرحلة الثالثة: رفع وتشغيل الخادم على سحابة Render</h2>
+      </div>
+    </div>
+    <p>تم نقل خادم بايثون (FastAPI) ليعمل سحابياً على مدار الساعة بنظام الحاويات (Docker):</p>
+
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <strong>إنشاء مستودع GitHub</strong>
+          إنشاء مستودع <code>asil775lil-svg/edu-platform</code> وربطه بنظام Git عبر Access Token لرفع التحديثات بضغطة زر.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <strong>تهيئة ملف Dockerfile السحابي</strong>
+          إنشاء ملف <code>Dockerfile</code> الرئيسي في جذر المشروع لتثبيت التبعيات (بما فيها مكتبة الحزم <code>packages/pkg</code> ومكتبات التشفير) وتشغيل قاعدة البيانات تلقائياً بـ Alembic.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <strong>إطلاق خدمة Render السحابية</strong>
+          اختيار خطة <strong>Free ($0/month)</strong> وضبط متغير البيئة:
+          <code>EDU_WEB_ORIGIN = https://edu-platform-ye.netlify.app</code>
+          فأصبح الخادم حياً ويعمل على:
+          <code>https://edu-platform-67ju.onrender.com</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4: Google Search Console & SEO -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">4</div>
+      <div>
+        <h2>المرحلة الرابعة: التوثيق في محرك بحث Google (Google Search Console)</h2>
+      </div>
+    </div>
+    <p>لتظهر المنصة باسمها <strong>"منظومة التعليم الذكية"</strong> في نتائج بحث Google:</p>
+
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <strong>تضمين الكلمات المفتاحية وبيانات الميتا (SEO)</strong>
+          تم ضبط ملف <code>index.html</code> بالعناوين الدقيقة، والوصف، وبطاقات المشاركة في واتساب وتيليجرام (Open Graph).
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <strong>خريطة الموقع (Sitemap) وملف الروبوتات</strong>
+          تم توليد ملف <code>sitemap.xml</code> و <code>robots.txt</code> لتسهيل فهرسة وتصفح عناكب بحث Google لجميع صفحات المنصة.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <strong>إثبات الملكية في Google Search Console</strong>
+          تم تضمين ملف التحقق الرقمي <code>google09c237c32af2063a.html</code> وتأكيد الملكية بنجاح 100% داخل لوحة تحكم مشرفي المواقع.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5: Automated Updates via GitHub -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">5</div>
+      <div>
+        <h2>المرحلة الخامسة: خطوات التحديث التلقائي المستمر عبر GitHub</h2>
+      </div>
+    </div>
+    <p>لأن Render و Netlify مرتبطان بمستودع GitHub، يمكنك تحديث المنصة مستقبلاً بأمر واحد فقط من جهازك:</p>
+
+    <div class="alert alert-info">
+      <strong>قاعدة ذهبية:</strong> بمجرد رفع أي كود إلى GitHub، يقوم Render و Netlify تلقائياً ببناء ونشر التحديث خلال دقيقتين دون أي تدخل يدوي!
+    </div>
+
+    <h3>أمر التحديث السريع من سطر الأوامر (PowerShell):</h3>
+<pre># 1. إضافة الملفات المعدلة
+git add .
+
+# 2. تسجيل وصف التحديث
+git commit -m "تحديث جديد للمنصة"
+
+# 3. إرسال التحديث إلى GitHub (التحديث السحابي التلقائي)
+git push origin main</pre>
+
+    <p>فور تنفيذ <code>git push</code>:</p>
+    <ul>
+      <li>يقوم خادم <strong>Render</strong> بإعادة بناء الخادم وتحديث التعديلات فوراً.</li>
+      <li>يقوم <strong>GitHub</strong> بحفظ نسخة احتياطية من كل تغيير مع تاريخه.</li>
+    </ul>
+  </div>
+
+  <!-- PHASE 6: Automated Updates via Google Drive -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">6</div>
+      <div>
+        <h2>المرحلة السادسة: هندسة التحديث التلقائي عبر Google Drive</h2>
+      </div>
+    </div>
+    <p>هذه هي الميزة الحصرية التي تمكن المعلم من وضع ملفات المنهج داخل Google Drive لتكتشفها المنصة وتحدّث الدروس تلقائياً:</p>
+
+    <h3>كيف تعمل دورة المزامنة التلقائية (Workflow)؟</h3>
+    <ol>
+      <li><strong>المعلم ينشئ مجلداً على Google Drive</strong> (مثلاً باسم المادة: <code>فيزياء_الصف_الثالث</code>).</li>
+      <li><strong>ربط Google Drive API بالخادم:</strong> يتم تزويد خادم FastAPI بمفتاح Service Account أو OAuth 2.0.</li>
+      <li><strong>الإشعار اللحظي (Webhooks via Google Drive Push):</strong>
+        تشترك المنصة في مراقبة المجلد عبر <code>files.watch</code>. فور قيام المعلم بحفظ أو إضافة أي ملف (PDF، فيديو MP4، اختبار Markdown):
+        ترسل جوجل إشعاراً فورياً (Webhook POST) إلى مسار:
+        <code>https://edu-platform-67ju.onrender.com/api/integrations/gdrive-webhook</code>
+      </li>
+      <li><strong>تحديث المسودة والنشر التلقائي:</strong>
+        يقوم الخادم بتحميل الملف وتحديث مسودة الدورة <code>courses.draft</code> وحساب بصمة SHA-256 للملف، ثم نشر Snapshot جديد وتوليد الحزمة الموقعة <code>.edupkg</code> تلقائياً!
+      </li>
+      <li><strong>تحديث الطالب:</strong>
+        واجهة الطالب تتحقق من وجود إصدار جديد عبر الرابط الدائم للملف وتقوم بتحديث المحتوى فوراً.
+      </li>
+    </ol>
+
+    <div class="alert alert-success">
+      <strong>طريقة المزامنة المكتبية الأسهل (بدون تعقيد):</strong><br>
+      إذا كان المعلم يملك برنامج <strong>Google Drive for Desktop</strong> على جهازه، فإن مجلد المادة يكون مجلداً محلياً في جهاز الكمبيوتر (مثلاً: <code>G:\My Drive\المادة</code>). تقوم ميزة <em>"استيراد مجلد"</em> الموجودة في المنصة بقراءة المجلد وتحديث المنهج بضغطة زر واحدة!
+    </div>
+  </div>
+
+  <!-- Summary & Quick Reference -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">✓</div>
+      <div>
+        <h2>الملخص وبيانات الاعتماد المحفوظة</h2>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>الخدمة</th>
+          <th>المعرف / الرابط</th>
+          <th>ملاحظات الأمان</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Netlify Frontend</td>
+          <td><code>https://edu-platform-ye.netlify.app</code></td>
+          <td>متاح عام ومحمي بـ SSL</td>
+        </tr>
+        <tr>
+          <td>Render API Backend</td>
+          <td><code>https://edu-platform-67ju.onrender.com</code></td>
+          <td>خادم بايثون سحابي حر</td>
+        </tr>
+        <tr>
+          <td>GitHub Repository</td>
+          <td><code>asil775lil-svg/edu-platform</code></td>
+          <td>مستودع الكود المصدري</td>
+        </tr>
+        <tr>
+          <td>Firebase Project</td>
+          <td><code>smart-education-ed253</code></td>
+          <td>Google Authentication</td>
+        </tr>
+        <tr>
+          <td>Google Search Console</td>
+          <td>الملكية موثقة بملف HTML</td>
+          <td>الأرشفة جارية لاسم "منظومة التعليم الذكية"</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>تم إنشاء هذا الدليل آلياً لمنظومة المنصة التعليمية الذكية (.edupkg) • جميع الحقوق محفوظة © 2026</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;">ملف التوثيق محفوظ محلياً في مجلد المشروع: <code>docs/cloud-setup-guide.html</code></p>
+  </footer>
+
+</div>
+
+</body>
+</html>
