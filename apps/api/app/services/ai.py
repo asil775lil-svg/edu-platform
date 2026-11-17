@@ -150,15 +150,25 @@ async def run_ai_action(
             else:
                 prompt = f"اشرح المفهوم التالي بلغة بسيطة ومباشرة للطالب بناءً على الدرس:\n{text}"
 
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.post(
-                    url,
-                    json={
-                        "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {"temperature": 0.4},
-                    },
-                )
-                if res.status_code == 200:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                res = None
+                for model_name in ["gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-flash"]:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={settings.gemini_api_key}"
+                    try:
+                        resp = await client.post(
+                            url,
+                            json={
+                                "contents": [{"parts": [{"text": prompt}]}],
+                                "generationConfig": {"temperature": 0.4},
+                            },
+                        )
+                        if resp.status_code == 200:
+                            res = resp
+                            break
+                    except Exception:
+                        continue
+
+                if res is not None and res.status_code == 200:
                     data = res.json()
                     raw_content = data["candidates"][0]["content"]["parts"][0]["text"]
                     # تنظيف كود markdown إن وجد
