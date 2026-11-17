@@ -1,0 +1,5 @@
+# توجيه طلبات الـ API إلى خادم Render السحابي
+/api/*  https://edu-platform-67ju.onrender.com/api/:splat  200
+
+# توجيه باقي الصفحات إلى واجهة React SPA
+/*      /index.html                                       200
