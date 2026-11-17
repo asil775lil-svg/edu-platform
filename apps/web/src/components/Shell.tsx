@@ -16,7 +16,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <div>
             <div style={{ lineHeight: 1.2 }}>منظومة التعليم الذكية</div>
             <div className="small muted" style={{ fontWeight: 500, lineHeight: 1.2 }}>
-              استوديو · حقيبة
+              استوديو · خزائن · حقيبة
             </div>
           </div>
         </div>
@@ -24,6 +24,9 @@ export function Shell({ children }: { children: ReactNode }) {
         <nav className="nav">
           <NavLink to="/studio" className={({ isActive }) => (isActive ? "active" : "")}>
             الاستوديو
+          </NavLink>
+          <NavLink to="/vaults" className={({ isActive }) => (isActive ? "active" : "")}>
+            🗄️ الخزائن
           </NavLink>
           <NavLink to="/library" className={({ isActive }) => (isActive ? "active" : "")}>
             حقيبتي

@@ -29,7 +29,8 @@ export type BlockType =
   | "callout"
   | "code"
   | "math"
-  | "divider";export type CalloutVariant = "info" | "warning" | "tip" | "danger";
+  | "divider"
+  | "table";export type CalloutVariant = "info" | "warning" | "tip" | "danger";
 
 export interface ProseDoc {
   type: "doc";
@@ -60,6 +61,10 @@ export interface Block {
   // كتلة معادلة رياضية
   latex?: string;
   displayMode?: boolean;
+  // كتلة جدول
+  tableCaption?: string;
+  tableHeaders?: string[];
+  tableRows?: string[][];
 }
 
 export interface Lesson {
@@ -230,4 +235,90 @@ export interface AiResult {
 
 // --- أنواع كتل موسّعة ---
 // (تم توسيعها ضمن BlockType أعلاه، هذا السطر محجوز)
+
+// --- الخزن وحفظ الملفات المستوردة لجميع الصيغ ---
+export interface VaultFile {
+  id: string;
+  vault_id: string;
+  user_id: string;
+  filename: string;
+  original_name: string;
+  ext: string;
+  mime: string;
+  size: number;
+  sha256: string;
+  source_type: "external_url" | "upload" | "api";
+  source_url: string | null;
+  description: string | null;
+  metadata_info: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  download_url: string;
+  view_url: string;
+}
+
+export interface Vault {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  user_id: string;
+  file_count: number;
+  total_size: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VaultDetail extends Vault {
+  files: VaultFile[];
+}
+
+export interface VaultFileInspect {
+  id: string;
+  filename: string;
+  ext: string;
+  mime: string;
+  size: number;
+  sha256: string;
+  download_url: string;
+  view_url: string;
+  source_type: string;
+  source_url: string | null;
+  description: string | null;
+  created_at: string;
+  preview_data: {
+    kind: "pdf" | "docx" | "spreadsheet" | "archive" | "code" | "media" | "image" | "database" | "binary";
+    language?: string;
+    content?: string;
+    line_count?: number;
+    blocks?: Array<{
+      type: "heading" | "paragraph" | "table" | "error";
+      level?: number;
+      text?: string;
+      rows?: string[][];
+    }>;
+    sheets?: Array<{ name: string; rows: string[][] }>;
+    file_count?: number;
+    total_uncompressed?: number;
+    files?: Array<{
+      path: string;
+      size: number;
+      compress_size?: number;
+      is_dir: boolean;
+      ext: string;
+    }>;
+    tables?: Array<{
+      name: string;
+      columns: string[];
+      row_count: number;
+      sample: string[][];
+    }>;
+    media_type?: "video" | "audio";
+    hex_dump?: string[];
+    ascii_dump?: string[];
+    error?: string;
+  };
+}
+
+
 

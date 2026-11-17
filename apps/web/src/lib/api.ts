@@ -12,6 +12,10 @@ import type {
   PackageJob,
   Unit,
   User,
+  Vault,
+  VaultDetail,
+  VaultFile,
+  VaultFileInspect,
   VersionInfo,
 } from "./types";
 
@@ -190,6 +194,53 @@ export const api = {
       form.append("file", file);
       return request<CourseDetail>("/courses/import-zip", { method: "POST", body: form });
     },
+  },
+
+  vaults: {
+    list: () => request<Vault[]>("/vaults"),
+    create: (body: { name: string; description?: string; icon?: string }) =>
+      request<Vault>("/vaults", { method: "POST", body: JSON.stringify(body) }),
+    get: (id: string, params?: { q?: string; category?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.q) q.set("q", params.q);
+      if (params?.category) q.set("category", params.category);
+      const queryStr = q.toString() ? `?${q.toString()}` : "";
+      return request<VaultDetail>(`/vaults/${id}${queryStr}`);
+    },
+    update: (id: string, body: { name?: string; description?: string; icon?: string }) =>
+      request<Vault>(`/vaults/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    delete: (id: string) => request<void>(`/vaults/${id}`, { method: "DELETE" }),
+    importUrl: (vaultId: string, body: { url: string; filename?: string; description?: string }) =>
+      request<VaultFile>(`/vaults/${vaultId}/import-url`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    upload: (vaultId: string, file: File, description?: string) => {
+      const form = new FormData();
+      form.append("file", file);
+      const queryStr = description ? `?description=${encodeURIComponent(description)}` : "";
+      return request<VaultFile>(`/vaults/${vaultId}/upload${queryStr}`, {
+        method: "POST",
+        body: form,
+      });
+    },
+    getFile: (vaultId: string, fileId: string) =>
+      request<VaultFile>(`/vaults/${vaultId}/files/${fileId}`),
+    inspect: (vaultId: string, fileId: string) =>
+      request<VaultFileInspect>(`/vaults/${vaultId}/files/${fileId}/inspect`),
+    updateFile: (
+      vaultId: string,
+      fileId: string,
+      body: { filename?: string; description?: string; vault_id?: string },
+    ) =>
+      request<VaultFile>(`/vaults/${vaultId}/files/${fileId}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }),
+    deleteFile: (vaultId: string, fileId: string) =>
+      request<void>(`/vaults/${vaultId}/files/${fileId}`, { method: "DELETE" }),
+    downloadUrl: (vaultId: string, fileId: string) => `${BASE}/vaults/${vaultId}/files/${fileId}/download`,
+    viewUrl: (vaultId: string, fileId: string) => `${BASE}/vaults/${vaultId}/files/${fileId}/view`,
   },
 };
 

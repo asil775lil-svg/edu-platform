@@ -134,6 +134,21 @@ export function defaultBlock(type: BlockType): Block {
         latex: "f(x) = \\int_{0}^{\\infty} e^{-x} \\, dx = 1",
         displayMode: true,
       };
+    case "table":
+      return {
+        id,
+        type,
+        tableCaption: "جدول تعليمي",
+        tableHeaders: ["الضمير (Pronoun)", "النطق بالعربية", "المعنى"],
+        tableRows: [
+          ["I", "آي", "أنا"],
+          ["You", "يو", "أنت / أنتم"],
+          ["He", "هي", "هو"],
+          ["She", "شي", "هي"],
+          ["We", "وي", "نحن"],
+          ["They", "ذي", "هم"],
+        ],
+      };
     case "divider":
       return { id, type };
     default:

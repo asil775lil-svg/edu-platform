@@ -294,7 +294,84 @@ function ReadBlock({ block }: { block: Block }) {
   if (block.type === "math") {
     return <ReadMath block={block} />;
   }
+  if (block.type === "table") {
+    return <ReadTable block={block} />;
+  }
   return null;
+}
+
+function ReadTable({ block }: { block: Block }) {
+  const headers = block.tableHeaders ?? [];
+  const rows = block.tableRows ?? [];
+
+  return (
+    <div style={{ margin: "1.2rem 0", overflowX: "auto" }}>
+      {block.tableCaption && (
+        <div style={{ fontWeight: 600, marginBottom: "0.5rem", color: "var(--primary-light)" }} dir="auto">
+          {block.tableCaption}
+        </div>
+      )}
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          borderRadius: "var(--radius)",
+          overflow: "hidden",
+          border: "1px solid var(--border)",
+        }}
+      >
+        {headers.length > 0 && (
+          <thead>
+            <tr style={{ background: "var(--card-2)" }}>
+              {headers.map((h, i) => (
+                <th
+                  key={i}
+                  style={{
+                    padding: "0.6rem 0.8rem",
+                    textAlign: "center",
+                    border: "1px solid var(--border)",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                  }}
+                  dir="auto"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr
+              key={ri}
+              style={{
+                background: ri % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)",
+              }}
+            >
+              {row.map((cell, ci) => {
+                const isEnglish = /^[a-zA-Z0-9\s.,!?'"()-]+$/.test(cell || "");
+                return (
+                  <td
+                    key={ci}
+                    style={{
+                      padding: "0.6rem 0.8rem",
+                      border: "1px solid var(--border)",
+                      direction: isEnglish ? "ltr" : "rtl",
+                      textAlign: isEnglish ? "left" : "right",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    {cell}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function ReadCode({ block }: { block: Block }) {

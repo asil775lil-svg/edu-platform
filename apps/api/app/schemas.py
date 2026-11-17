@@ -231,3 +231,88 @@ class SmartImportIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     markdown_content: str = Field(min_length=10)
 
+
+# --------------------------------------------------------------------------- #
+# الخزن وحفظ الملفات المستوردة بجميع الصيغ (Vaults & Multi-Format Files)
+# --------------------------------------------------------------------------- #
+class VaultCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    description: str = ""
+    icon: str = "🗄️"
+
+
+class VaultUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = None
+    icon: str | None = None
+
+
+class VaultFileOut(BaseModel):
+    id: str
+    vault_id: str
+    user_id: str
+    filename: str
+    original_name: str
+    ext: str
+    mime: str
+    size: int
+    sha256: str
+    source_type: str  # 'external_url' | 'upload' | 'api'
+    source_url: str | None = None
+    description: str | None = None
+    metadata_info: dict[str, Any] = {}
+    created_at: datetime
+    updated_at: datetime
+    download_url: str = ""
+    view_url: str = ""
+
+    model_config = {"from_attributes": True}
+
+
+class VaultOut(BaseModel):
+    id: str
+    name: str
+    description: str
+    icon: str
+    user_id: str
+    file_count: int = 0
+    total_size: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class VaultDetailOut(VaultOut):
+    files: list[VaultFileOut] = []
+
+
+class VaultImportUrlIn(BaseModel):
+    url: str = Field(min_length=4)
+    filename: str | None = None
+    description: str | None = None
+
+
+class VaultFileUpdate(BaseModel):
+    filename: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = None
+    vault_id: str | None = None
+
+
+class VaultFileInspectOut(BaseModel):
+    id: str
+    filename: str
+    ext: str
+    mime: str
+    size: int
+    sha256: str
+    download_url: str
+    view_url: str
+    source_type: str
+    source_url: str | None = None
+    description: str | None = None
+    created_at: datetime
+    preview_data: dict[str, Any]
+
+
+

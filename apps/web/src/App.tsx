@@ -8,6 +8,7 @@ const StudioPage = lazy(() => import("./pages/StudioPage"));
 const CourseEditorPage = lazy(() => import("./pages/CourseEditorPage"));
 const LibraryPage = lazy(() => import("./pages/LibraryPage"));
 const ReaderPage = lazy(() => import("./pages/ReaderPage"));
+const VaultsPage = lazy(() => import("./pages/VaultsPage"));
 
 function PageLoading() {
   return (
@@ -57,6 +58,22 @@ export default function App() {
           element={
             <Protected>
               <CourseEditorPage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/vaults"
+          element={
+            <Protected>
+              <VaultsPage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/vaults/:vaultId"
+          element={
+            <Protected>
+              <VaultsPage />
             </Protected>
           }
         />
