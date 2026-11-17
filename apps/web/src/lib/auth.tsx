@@ -11,6 +11,7 @@ import { api } from "./api";
 import {
   auth,
   googleProvider,
+  githubProvider,
   signInWithPopup,
   firebaseSignOut,
 } from "./firebase";
@@ -22,6 +23,7 @@ interface AuthState {
   signIn: (identifier: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
   signInWithGoogle: (role?: string) => Promise<void>;
+  signInWithGithub: (role?: string) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   updateProfile: (body: {
@@ -68,6 +70,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id_token: idToken,
           role,
           name: result.user.displayName || undefined,
+        });
+        setUser(loggedUser);
+      },
+      signInWithGithub: async (role = "teacher") => {
+        const result = await signInWithPopup(auth, githubProvider);
+        const idToken = await result.user.getIdToken();
+        const loggedUser = await api.firebaseLogin({
+          id_token: idToken,
+          role,
+          name: result.user.displayName || result.user.email?.split("@")[0] || undefined,
         });
         setUser(loggedUser);
       },

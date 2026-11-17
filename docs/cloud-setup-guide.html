@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الدليل الشامل للربط السحابي، النشر، والتحديث التلقائي | منظومة التعليم الذكية</title>
+  <title>الدليل الشامل للربط السحابي، النشر، وتفعيل الحسابات والتحديث التلقائي | منظومة التعليم الذكية</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -45,7 +45,7 @@
     header {
       text-align: center;
       padding: 3rem 1.5rem;
-      background: linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(14,165,233,0.08) 100%);
+      background: linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(14,165,233,0.1) 100%);
       border: 1px solid var(--card-border);
       border-radius: 20px;
       margin-bottom: 2.5rem;
@@ -53,21 +53,10 @@
       overflow: hidden;
     }
 
-    header::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
     .badge {
       display: inline-block;
       padding: 0.35rem 1rem;
-      background: rgba(37, 99, 235, 0.2);
+      background: rgba(37, 99, 235, 0.25);
       border: 1px solid var(--primary-light);
       color: var(--primary-light);
       border-radius: 50px;
@@ -87,8 +76,8 @@
 
     .subtitle {
       color: var(--text-muted);
-      font-size: 1.1rem;
-      max-width: 750px;
+      font-size: 1.05rem;
+      max-width: 800px;
       margin: 0 auto;
     }
 
@@ -156,11 +145,11 @@
     }
 
     .step-num {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -175,9 +164,15 @@
     }
 
     h3 {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       color: var(--primary-light);
-      margin: 1.5rem 0 0.8rem;
+      margin: 1.6rem 0 0.8rem;
+    }
+
+    h4 {
+      font-size: 1.05rem;
+      color: #38bdf8;
+      margin: 1.2rem 0 0.5rem;
     }
 
     p, li {
@@ -212,7 +207,7 @@
 
     code {
       font-family: 'Consolas', 'Courier New', monospace;
-      background: rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.08);
       padding: 0.2rem 0.45rem;
       border-radius: 5px;
       color: #f472b6;
@@ -223,7 +218,7 @@
 
     /* Callout Alerts */
     .alert {
-      padding: 1rem 1.25rem;
+      padding: 1.1rem 1.3rem;
       border-radius: 10px;
       margin: 1.2rem 0;
       border-right: 4px solid;
@@ -232,19 +227,19 @@
 
     .alert-success {
       border-color: var(--accent);
-      background: rgba(16, 185, 129, 0.08);
+      background: rgba(16, 185, 129, 0.09);
       color: #a7f3d0;
     }
 
     .alert-warning {
       border-color: var(--warning);
-      background: rgba(245, 158, 11, 0.08);
+      background: rgba(245, 158, 11, 0.09);
       color: #fde68a;
     }
 
     .alert-info {
       border-color: var(--secondary);
-      background: rgba(14, 165, 233, 0.08);
+      background: rgba(14, 165, 233, 0.09);
       color: #bae6fd;
     }
 
@@ -262,15 +257,15 @@
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--card-border);
       border-radius: 10px;
-      padding: 1rem 1.25rem;
+      padding: 1.1rem 1.3rem;
       align-items: flex-start;
     }
 
     .step-circle {
       background: var(--card-border);
       color: var(--primary-light);
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -288,10 +283,9 @@
     .step-content strong {
       color: #fff;
       display: block;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.3rem;
     }
 
-    /* Architecture Table */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -331,9 +325,9 @@
 
   <!-- Header -->
   <header>
-    <div class="badge">دليل الإعداد والتشغيل السحابي v1.0</div>
+    <div class="badge">الدليل الشامل المحدّث v2.0</div>
     <h1>منظومة التعليم الذكية (.edupkg)</h1>
-    <p class="subtitle">التوثيق الهندسي الشامل لجميع خطوات الربط السحابي مع Firebase، النشر العالمي، التوثيق في محرك بحث Google، والتحديث التلقائي المستمر عبر GitHub و Google Drive.</p>
+    <p class="subtitle">التوثيق الهندسي المتكامل: طرق تفعيل الحسابات في Firebase، ربط مشروع السحابة مع Google و GitHub، النشر العالمي، التوثيق في محرك بحث Google، والتحديث التلقائي المستمر عبر Google Drive و GitHub CI/CD.</p>
   </header>
 
   <!-- Quick Info Links -->
@@ -356,333 +350,268 @@
     </a>
   </div>
 
-  <!-- Table of Architecture -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="step-num">★</div>
-      <div>
-        <h2>نظرة عامة على البنية السحابية الحالية</h2>
-      </div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>المكوّن</th>
-          <th>التقنية المستخدمة</th>
-          <th>الاستضافة السحابية</th>
-          <th>الحالة</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>واجهة المستخدم (Frontend)</strong></td>
-          <td>React 19 + TypeScript + Vite + Tailwind</td>
-          <td>Netlify Global Edge CDN</td>
-          <td>✅ تعمل أونلاين 24/7</td>
-        </tr>
-        <tr>
-          <td><strong>الخادم البرمجي (Backend)</strong></td>
-          <td>FastAPI (Python 3.11) + SQLAlchemy + Alembic</td>
-          <td>Render Cloud Web Service (Docker)</td>
-          <td>✅ يعمل أونلاين 24/7</td>
-        </tr>
-        <tr>
-          <td><strong>المصادقة والمستخدمين (Auth)</strong></td>
-          <td>Firebase Authentication (Google + Email)</td>
-          <td>Google Identity Platform</td>
-          <td>✅ مربوط ومُفعّل</td>
-        </tr>
-        <tr>
-          <td><strong>فهرسة محركات البحث (SEO)</strong></td>
-          <td>Sitemap XML + Meta Tags + Verification</td>
-          <td>Google Search Console</td>
-          <td>✅ تم إثبات الملكية وتفعيل الأرشفة</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- PHASE 1: Firebase Setup -->
+  <!-- SECTION 1: ACCOUNT ACTIVATION & SOCIAL LOGINS IN FIREBASE -->
   <div class="section-card">
     <div class="section-header">
       <div class="step-num">1</div>
       <div>
-        <h2>المرحلة الأولى: تهيئة وربط Firebase (المصادقة السحابية)</h2>
+        <h2>طرق تفعيل الحسابات وتسجيل الدخول في Firebase</h2>
       </div>
     </div>
-    <p>تم ربط المنصة بمشروع Firebase الرسمي لتأمين تسجيل الدخول، وحماية الجلسات، وتوفير الدخول بنقرة واحدة عبر Google:</p>
+    <p>يدعم مشروع المنصة في Firebase عدة طرق مرنة وآمنة لتفعيل حسابات المعلمين والطلاب وتأكيد هوياتهم:</p>
 
+    <!-- Google Sign-In -->
+    <h3>أولاً: تفعيل الدخول السريع بحساب Google (مُفعّل وجاهز ✅)</h3>
+    <ul>
+      <li><strong>الفكرة:</strong> لا يحتاج المستخدم إلى كتابة كلمة سر أو تفعيل بالبريد، لأن حساب Google موثق مسبقاً وتؤكده Google تلقائياً.</li>
+      <li><strong>كيف تم إعداده؟</strong>
+        <ol>
+          <li>من لوحة Firebase ➔ <strong>Authentication</strong> ➔ تبويب <strong>Sign-in method</strong>.</li>
+          <li>الضغط على مزود <strong>Google</strong> ➔ تفعيل <strong>Enable</strong>.</li>
+          <li>تحديد البريد الإلكتروني للدعم (Project support email) ➔ الضغط على <strong>Save</strong>.</li>
+        </ol>
+      </li>
+      <li><strong>في كود المنصة:</strong> تم تفعيل زر <code>الدخول بحساب Google</code> ويستدعي <code>signInWithPopup(auth, googleProvider)</code>.</li>
+    </ul>
+
+    <!-- GitHub Sign-In -->
+    <h3>ثانياً: تفعيل الدخول بحساب GitHub (خطوات الربط بين Firebase و GitHub)</h3>
+    <p>يتيح هذا الخيار للمعلمين والطلاب التقنيين تسجيل الدخول بحساباتهم البرمجية على GitHub بنقرة واحدة:</p>
+    
     <div class="flow-steps">
       <div class="step-item">
         <div class="step-circle">1</div>
         <div class="step-content">
-          <strong>إنشاء مشروع Firebase</strong>
-          تم الدخول إلى Firebase Console وإنشاء مشروع يحمل المعرّف: <code>smart-education-ed253</code>.
+          <strong>الحصول على رابط إعادة التوجيه من Firebase (Callback URL)</strong>
+          ادخل إلى لوحة Firebase ➔ Authentication ➔ Sign-in method ➔ اضغط على مزود <strong>GitHub</strong>:
+          <br>ستجد رابطاً ينتهي بـ: <code>/__/auth/handler</code> (انسخه).
         </div>
       </div>
       <div class="step-item">
         <div class="step-circle">2</div>
         <div class="step-content">
-          <strong>تفعيل مزودي تسجيل الدخول (Sign-in Providers)</strong>
-          من لوحة Firebase ➔ Authentication ➔ تم تفعيل:
-          <ul style="margin: 0.5rem 1rem 0;">
-            <li><strong>Email/Password:</strong> لتسجيل المعلمين والطلاب بالبريد وكلمة السر.</li>
-            <li><strong>Google:</strong> لتسجيل الدخول الفوري بضغطة زر دون ملء استمارات.</li>
+          <strong>إنشاء تطبيق OAuth في حسابك على GitHub</strong>
+          ادخل إلى GitHub ➔ <strong>Settings</strong> ➔ <strong>Developer settings</strong> ➔ <strong>OAuth Apps</strong> ➔ اضغط <strong>New OAuth App</strong>:
+          <ul>
+            <li><strong>Application name:</strong> <code>Smart Edu Platform</code></li>
+            <li><strong>Homepage URL:</strong> <code>https://edu-platform-ye.netlify.app</code></li>
+            <li><strong>Authorization callback URL:</strong> الصق الرابط المنسوخ من Firebase في الخطوة 1.</li>
+            <li>اضغط <strong>Register application</strong>.</li>
           </ul>
         </div>
       </div>
       <div class="step-item">
         <div class="step-circle">3</div>
         <div class="step-content">
-          <strong>استخراج وتصحيح المفاتيح السحابية (firebaseConfig)</strong>
-          تم ربط المفاتيح المدققة هندسياً في الواجهة بملف <code>apps/web/src/lib/firebase.ts</code>:
-<pre>const firebaseConfig = {
-  apiKey: "AIzaSyD2XQ_7uIOk6R1w1MFtc5l8TXW16Xaif8c", // مدقق مع سيرفرات Google
-  authDomain: "smart-education-ed253.firebaseapp.com",
-  projectId: "smart-education-ed253",
-  storageBucket: "smart-education-ed253.firebasestorage.app",
-  messagingSenderId: "981195951450",
-  appId: "1:981195951450:web:9f1c9518cfdbcfd0c47763",
-  measurementId: "G-M6PP83HH9K"
-};</pre>
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">4</div>
-        <div class="step-content">
-          <strong>التحقق السحابي في الخادم (FastAPI Backend Verification)</strong>
-          تم بناء وحدة <code>app/core/firebase.py</code> لجلب شهادات Google العامة الرقمية تلقائياً من:
-          <code>https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com</code>
-          والتحقق المشفر من صحة رمز المستخدم (ID Token) وتوليد مفاتيح التوقيع الرقمية المشفرة (Ed25519) له فوراً.
+          <strong>ربط المفاتيح في Firebase</strong>
+          في صفحة تطبيق GitHub الجديد، انسخ <strong>Client ID</strong>، واضغط على <strong>Generate a new client secret</strong> وانسخ الـ Secret.
+          <br>ارجع إلى صفحة Firebase والصقهما في خانتي (Client ID و Client secret) ثم اضغط <strong>Save</strong>.
         </div>
       </div>
     </div>
+
+    <!-- Email Verification -->
+    <h3>ثالثاً: تفعيل رسالة تأكيد البريد الإلكتروني (Email Verification / Activation)</h3>
+    <p>عندما يسجل مستخدم ببريد إلكتروني وكلمة مرور، يمكنك إلزامه بالنقر على رابط تفعيل يصل إلى بريده الإلكتروني:</p>
+    <ul>
+      <li><strong>طريقة تفعيل الرسالة في الكود:</strong> بعد استدعاء <code>createUserWithEmailAndPassword</code>، يتم استدعاء دالة:
+<pre>import { sendEmailVerification } from "firebase/auth";
+await sendEmailVerification(auth.currentUser);</pre>
+      </li>
+      <li><strong>تخصيص نص رسالة التفعيل بالعربية:</strong>
+        <ol>
+          <li>من لوحة Firebase ➔ Authentication ➔ تبويب <strong>Templates (القوالب)</strong>.</li>
+          <li>اختر <strong>Email address verification</strong> واضغط على أيقونة القلم ✏️.</li>
+          <li>غيّر عنوان الرسالة إلى: <code>تفعيل حسابك في منظومة التعليم الذكية</code>.</li>
+          <li>غيّر نص الرسالة بالعربية واضغط <strong>Save</strong>.</li>
+        </ol>
+      </li>
+    </ul>
+
+    <!-- Passwordless Email Link -->
+    <h3>رابعاً: الدخول السريع برابط البريد دون كلمة مرور (Passwordless Sign-in)</h3>
+    <p>من لوحة Firebase ➔ Authentication ➔ اضغط على <strong>Email/Password</strong>، وفعّل خيار <strong>Email link (passwordless sign-in)</strong> ثم احفظ. هذا الخيار يرسل للمستخدم رابطاً آمناً إلى بريده بمجرد كتابته، يضغط عليه فيدخل مباشرة للمنصة دون كلمة سر!</p>
   </div>
 
-  <!-- PHASE 2: Frontend Deployment -->
+  <!-- SECTION 2: CONNECTING FIREBASE WITH GITHUB CI/CD & GOOGLE -->
   <div class="section-card">
     <div class="section-header">
       <div class="step-num">2</div>
       <div>
-        <h2>المرحلة الثانية: نشر الواجهة العالمية على Netlify</h2>
+        <h2>ربط مشروع Firebase مع GitHub و Google (الأتمتة والنشر)</h2>
       </div>
     </div>
-    <p>تم تحويل الواجهة من العمل المحلي <code>localhost</code> إلى شبكة توزيع محتوى سحابية سريعة:</p>
+    <p>لربط المنظومة السحابية بحيث يتم نشر وتحديث كل شيء تلقائياً بين Google و Firebase و GitHub:</p>
 
+    <h3>1. ربط مستودع GitHub بنظام النشر التلقائي في Firebase Hosting:</h3>
+    <p>إذا أردت مستقبلاً أن يُنشر موقعك على Firebase Hosting تلقائياً عند تنفيذ <code>git push</code> على مستودع GitHub:</p>
     <div class="flow-steps">
       <div class="step-item">
         <div class="step-circle">1</div>
         <div class="step-content">
-          <strong>بناء نسخة الإنتاج (Production Build)</strong>
-          تنفيذ أمر: <code>npm run build</code> داخل مجلد <code>apps/web</code>، والذي يولد الملفات المحسنة في <code>apps/web/dist</code>.
+          <strong>توليد مفتاح خدمة النشر (Service Account Key)</strong>
+          من لوحة Firebase ➔ Project settings (أيقونة الترس) ➔ تبويب <strong>Service accounts</strong> ➔ اضغط على <strong>Generate new private key</strong>.
         </div>
       </div>
       <div class="step-item">
         <div class="step-circle">2</div>
         <div class="step-content">
-          <strong>النشر بنقرة واحدة (Netlify Drop)</strong>
-          سحب مجلد <code>apps/web/dist</code> وإفلاته في Netlify.
+          <strong>إضافة المفتاح إلى GitHub Secrets</strong>
+          في مستودع GitHub الخاص بك (<code>asil775lil-svg/edu-platform</code>) ➔ <strong>Settings</strong> ➔ <strong>Secrets and variables</strong> ➔ <strong>Actions</strong> ➔ <strong>New repository secret</strong>:
+          <br>سمّه: <code>FIREBASE_SERVICE_ACCOUNT_SMART_EDUCATION_ED253</code> والصق محتوى المفتاح.
         </div>
       </div>
       <div class="step-item">
         <div class="step-circle">3</div>
         <div class="step-content">
-          <strong>تخصيص النطاق وإتاحته للعامة</strong>
-          تغيير الاسم من الرابط العشوائي إلى الرابط الرسمي:
-          <code>https://edu-platform-ye.netlify.app</code> وجعل صلاحية الوصول <strong>Public</strong>.
+          <strong>تشغيل سير العمل التلقائي (GitHub Action)</strong>
+          يتم إنشاء ملف <code>.github/workflows/firebase-deploy.yml</code> ليقوم تلقائياً ببناء المنصة ورفعها لفايربيس مع كل تحديث ترسله!
+        </div>
+      </div>
+    </div>
+
+    <h3>2. ربط المنظومة مع Google Cloud APIs (لخدمات Google Drive و AI):</h3>
+    <ul>
+      <li>مشروعك <code>smart-education-ed253</code> هو مشروع متكامل بين <strong>Firebase</strong> و <strong>Google Cloud Platform</strong>.</li>
+      <li>أي خدمة من جوجل تريد تفعيلها (مثل Google Drive API أو Gemini AI) تفعّلها مباشرة لنفس المشروع من:
+        <br><code>https://console.cloud.google.com/apis/library?project=smart-education-ed253</code>
+      </li>
+    </ul>
+  </div>
+
+  <!-- SECTION 3: AUTOMATIC UPDATES VIA GITHUB & GOOGLE DRIVE -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="step-num">3</div>
+      <div>
+        <h2>خطوات التحديث التلقائي الشامل عبر GitHub و Google Drive</h2>
+      </div>
+    </div>
+
+    <h3>المسار الأول: التحديث التلقائي للكود والخادم عبر GitHub 🚀</h3>
+    <p>أي تحسين أو تعديل تجريه على المنصة في جهازك، يُنشر للإنترنت تلقائياً بهذه الخطوات الثلاث البسيطة في PowerShell:</p>
+<pre># 1. تجميع كل الملفات المعدلة
+git add .
+
+# 2. كتابة وصف لما تم تعديله
+git commit -m "إضافة ميزات وتحديثات جديدة للمنصة"
+
+# 3. إرسال التحديث للسحابة
+git push origin main</pre>
+
+    <div class="alert alert-success">
+      <strong>ماذا يحدث بعد أمر `git push` تلقائياً؟</strong><br>
+      • سحابة <strong>Render</strong> ترصد التحديث وتبدأ إعادة بناء الخادم ونشر الـ API السحابي الجديد خلال دقيقة واحدة دون توقف الموقع.<br>
+      • مستودع <strong>GitHub</strong> يحفظ أحدث نسخة احتياطية من كودك بشكل دائم ومشفر.
+    </div>
+
+    <h3>المسار الثاني: التحديث التلقائي للمناهج والدروس عبر Google Drive 📁</h3>
+    <p>يتيح للمعلم إضافة الدروس وتعديل الفيديوهات والملفات في مجلد المادة على Google Drive لتتحدث في المنصة فوراً:</p>
+
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <strong>تفعيل Google Drive API</strong>
+          في وحدة تحكم Google Cloud لنفس المشروع، يتم تفعيل مكتبة <code>Google Drive API</code>.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <strong>ربط مجلد المنهج (Folder Sync)</strong>
+          يقوم المعلم بمشاركة مجلد المادة على Google Drive مع بريد الخدمة (Service Account) الخاص بالمنصة، أو تحديد معرف المجلد (Folder ID).
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <strong>إشعار التغييرات اللحظي (Google Drive Push Notifications - Webhooks)</strong>
+          يقوم الخادم بتسجيل اشتراك مراقبة (Watch Request). عند قيام المعلم بحفظ أو إضافة أي درس أو فيديو جديد في درايف:
+          <br>ترسل جوجل إشعاراً فورياً (Webhook POST) إلى خادم المنصة:
+          <br><code>https://edu-platform-67ju.onrender.com/api/integrations/gdrive-webhook</code>
         </div>
       </div>
       <div class="step-item">
         <div class="step-circle">4</div>
         <div class="step-content">
-          <strong>إعداد التوجيه السحابي (_redirects)</strong>
-          إنشاء ملف <code>apps/web/public/_redirects</code> لربط طلبات الواجهة بالخادم السحابي دون مشاكل CORS:
-<pre>/api/*  https://edu-platform-67ju.onrender.com/api/:splat  200
-/*      /index.html                                       200</pre>
+          <strong>التحديث التلقائي ونشر حزمة (.edupkg)</strong>
+          يقوم الخادم السحابي بقراءة الملفات المحدثة، دمجها في مسودة المنهج <code>courses.draft</code>، وتوليد نسخة ثابتة جديدة موثوقة (Published Version)، لتصل لجميع الطلاب فور فتحهم للمنصة!
         </div>
       </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>حل بديل مباشر (المزامنة المكتبية ببرنامج Google Drive):</strong><br>
+      إذا كان المعلم يملك تطبيق <strong>Google Drive للكمبيوتر</strong>، فإن مجلد درايف يظهر كمجلد محلي في جهازه. وتتيح ميزة <em>"استيراد مجلد"</em> المدمجة في المنصة استيراد وتحديث المنهج كاملاً بضغطة زر دون الحاجة لأي مفاتيح برمجية!
     </div>
   </div>
 
-  <!-- PHASE 3: Backend Cloud Deployment -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="step-num">3</div>
-      <div>
-        <h2>المرحلة الثالثة: رفع وتشغيل الخادم على سحابة Render</h2>
-      </div>
-    </div>
-    <p>تم نقل خادم بايثون (FastAPI) ليعمل سحابياً على مدار الساعة بنظام الحاويات (Docker):</p>
-
-    <div class="flow-steps">
-      <div class="step-item">
-        <div class="step-circle">1</div>
-        <div class="step-content">
-          <strong>إنشاء مستودع GitHub</strong>
-          إنشاء مستودع <code>asil775lil-svg/edu-platform</code> وربطه بنظام Git عبر Access Token لرفع التحديثات بضغطة زر.
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">2</div>
-        <div class="step-content">
-          <strong>تهيئة ملف Dockerfile السحابي</strong>
-          إنشاء ملف <code>Dockerfile</code> الرئيسي في جذر المشروع لتثبيت التبعيات (بما فيها مكتبة الحزم <code>packages/pkg</code> ومكتبات التشفير) وتشغيل قاعدة البيانات تلقائياً بـ Alembic.
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">3</div>
-        <div class="step-content">
-          <strong>إطلاق خدمة Render السحابية</strong>
-          اختيار خطة <strong>Free ($0/month)</strong> وضبط متغير البيئة:
-          <code>EDU_WEB_ORIGIN = https://edu-platform-ye.netlify.app</code>
-          فأصبح الخادم حياً ويعمل على:
-          <code>https://edu-platform-67ju.onrender.com</code>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PHASE 4: Google Search Console & SEO -->
+  <!-- SECTION 4: GOOGLE SEARCH CONSOLE & NETLIFY SUMMARY -->
   <div class="section-card">
     <div class="section-header">
       <div class="step-num">4</div>
       <div>
-        <h2>المرحلة الرابعة: التوثيق في محرك بحث Google (Google Search Console)</h2>
+        <h2>التوثيق في محرك بحث Google وتحديث Netlify</h2>
       </div>
     </div>
-    <p>لتظهر المنصة باسمها <strong>"منظومة التعليم الذكية"</strong> في نتائج بحث Google:</p>
-
-    <div class="flow-steps">
-      <div class="step-item">
-        <div class="step-circle">1</div>
-        <div class="step-content">
-          <strong>تضمين الكلمات المفتاحية وبيانات الميتا (SEO)</strong>
-          تم ضبط ملف <code>index.html</code> بالعناوين الدقيقة، والوصف، وبطاقات المشاركة في واتساب وتيليجرام (Open Graph).
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">2</div>
-        <div class="step-content">
-          <strong>خريطة الموقع (Sitemap) وملف الروبوتات</strong>
-          تم توليد ملف <code>sitemap.xml</code> و <code>robots.txt</code> لتسهيل فهرسة وتصفح عناكب بحث Google لجميع صفحات المنصة.
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">3</div>
-        <div class="step-content">
-          <strong>إثبات الملكية في Google Search Console</strong>
-          تم تضمين ملف التحقق الرقمي <code>google09c237c32af2063a.html</code> وتأكيد الملكية بنجاح 100% داخل لوحة تحكم مشرفي المواقع.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PHASE 5: Automated Updates via GitHub -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="step-num">5</div>
-      <div>
-        <h2>المرحلة الخامسة: خطوات التحديث التلقائي المستمر عبر GitHub</h2>
-      </div>
-    </div>
-    <p>لأن Render و Netlify مرتبطان بمستودع GitHub، يمكنك تحديث المنصة مستقبلاً بأمر واحد فقط من جهازك:</p>
-
-    <div class="alert alert-info">
-      <strong>قاعدة ذهبية:</strong> بمجرد رفع أي كود إلى GitHub، يقوم Render و Netlify تلقائياً ببناء ونشر التحديث خلال دقيقتين دون أي تدخل يدوي!
-    </div>
-
-    <h3>أمر التحديث السريع من سطر الأوامر (PowerShell):</h3>
-<pre># 1. إضافة الملفات المعدلة
-git add .
-
-# 2. تسجيل وصف التحديث
-git commit -m "تحديث جديد للمنصة"
-
-# 3. إرسال التحديث إلى GitHub (التحديث السحابي التلقائي)
-git push origin main</pre>
-
-    <p>فور تنفيذ <code>git push</code>:</p>
+    
+    <h3>1. إثبات الملكية في Google Search Console:</h3>
     <ul>
-      <li>يقوم خادم <strong>Render</strong> بإعادة بناء الخادم وتحديث التعديلات فوراً.</li>
-      <li>يقوم <strong>GitHub</strong> بحفظ نسخة احتياطية من كل تغيير مع تاريخه.</li>
+      <li>تم إنشاء وتضمين ملف التحقق الرسمي: <code>google09c237c32af2063a.html</code> في مسار المنصة الرئيسي.</li>
+      <li>تم إثبات الملكية بنجاح 100% وأصبح الموقع موثقاً رسمياً لدى Google.</li>
+      <li>تم إرسال ملف خريطة الموقع: <code>sitemap.xml</code> لتوجيه روبوتات جوجل لأرشفة كامل صفحات المنصة.</li>
     </ul>
+
+    <h3>2. تحديث موقع Netlify بآخر نسخة مبنية:</h3>
+    <p>عند إجراء أي تعديل على الواجهة، تقوم فقط ببنائها ورفعها في 5 ثوانٍ:</p>
+<pre># في مجلد apps/web:
+npm run build</pre>
+    <p>ثم سحب مجلد <code>apps/web/dist</code> وإفلاته في صفحة موقعك بـ Netlify (أو عبر <code>app.netlify.com/drop</code>).</p>
   </div>
 
-  <!-- PHASE 6: Automated Updates via Google Drive -->
+  <!-- SECTION 5: CREDENTIALS AND REFERENCE TABLE -->
   <div class="section-card">
     <div class="section-header">
-      <div class="step-num">6</div>
+      <div class="step-num">★</div>
       <div>
-        <h2>المرحلة السادسة: هندسة التحديث التلقائي عبر Google Drive</h2>
-      </div>
-    </div>
-    <p>هذه هي الميزة الحصرية التي تمكن المعلم من وضع ملفات المنهج داخل Google Drive لتكتشفها المنصة وتحدّث الدروس تلقائياً:</p>
-
-    <h3>كيف تعمل دورة المزامنة التلقائية (Workflow)؟</h3>
-    <ol>
-      <li><strong>المعلم ينشئ مجلداً على Google Drive</strong> (مثلاً باسم المادة: <code>فيزياء_الصف_الثالث</code>).</li>
-      <li><strong>ربط Google Drive API بالخادم:</strong> يتم تزويد خادم FastAPI بمفتاح Service Account أو OAuth 2.0.</li>
-      <li><strong>الإشعار اللحظي (Webhooks via Google Drive Push):</strong>
-        تشترك المنصة في مراقبة المجلد عبر <code>files.watch</code>. فور قيام المعلم بحفظ أو إضافة أي ملف (PDF، فيديو MP4، اختبار Markdown):
-        ترسل جوجل إشعاراً فورياً (Webhook POST) إلى مسار:
-        <code>https://edu-platform-67ju.onrender.com/api/integrations/gdrive-webhook</code>
-      </li>
-      <li><strong>تحديث المسودة والنشر التلقائي:</strong>
-        يقوم الخادم بتحميل الملف وتحديث مسودة الدورة <code>courses.draft</code> وحساب بصمة SHA-256 للملف، ثم نشر Snapshot جديد وتوليد الحزمة الموقعة <code>.edupkg</code> تلقائياً!
-      </li>
-      <li><strong>تحديث الطالب:</strong>
-        واجهة الطالب تتحقق من وجود إصدار جديد عبر الرابط الدائم للملف وتقوم بتحديث المحتوى فوراً.
-      </li>
-    </ol>
-
-    <div class="alert alert-success">
-      <strong>طريقة المزامنة المكتبية الأسهل (بدون تعقيد):</strong><br>
-      إذا كان المعلم يملك برنامج <strong>Google Drive for Desktop</strong> على جهازه، فإن مجلد المادة يكون مجلداً محلياً في جهاز الكمبيوتر (مثلاً: <code>G:\My Drive\المادة</code>). تقوم ميزة <em>"استيراد مجلد"</em> الموجودة في المنصة بقراءة المجلد وتحديث المنهج بضغطة زر واحدة!
-    </div>
-  </div>
-
-  <!-- Summary & Quick Reference -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="step-num">✓</div>
-      <div>
-        <h2>الملخص وبيانات الاعتماد المحفوظة</h2>
+        <h2>سجل البيانات وروابط الوصول السحابية</h2>
       </div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>الخدمة</th>
-          <th>المعرف / الرابط</th>
-          <th>ملاحظات الأمان</th>
+          <th>الخدمة / المكون</th>
+          <th>الرابط / المعرف السحابي</th>
+          <th>الحالة والصلاحية</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Netlify Frontend</td>
-          <td><code>https://edu-platform-ye.netlify.app</code></td>
-          <td>متاح عام ومحمي بـ SSL</td>
+          <td>رابط المنصة الرسمي (Netlify)</td>
+          <td><a href="https://edu-platform-ye.netlify.app" target="_blank" style="color: #60a5fa;">https://edu-platform-ye.netlify.app</a></td>
+          <td>✅ متاح عام ومحمي بـ HTTPS</td>
         </tr>
         <tr>
-          <td>Render API Backend</td>
-          <td><code>https://edu-platform-67ju.onrender.com</code></td>
-          <td>خادم بايثون سحابي حر</td>
+          <td>رابط الخادم السحابي (Render API)</td>
+          <td><a href="https://edu-platform-67ju.onrender.com/docs" target="_blank" style="color: #60a5fa;">https://edu-platform-67ju.onrender.com/docs</a></td>
+          <td>✅ خادم بايثون سحابي يعمل 24/7</td>
         </tr>
         <tr>
-          <td>GitHub Repository</td>
-          <td><code>asil775lil-svg/edu-platform</code></td>
-          <td>مستودع الكود المصدري</td>
+          <td>مستودع الكود (GitHub)</td>
+          <td><a href="https://github.com/asil775lil-svg/edu-platform" target="_blank" style="color: #60a5fa;">asil775lil-svg/edu-platform</a></td>
+          <td>✅ مربوط مع Render بنشر تلقائي</td>
         </tr>
         <tr>
-          <td>Firebase Project</td>
+          <td>مشروع السحابة (Firebase)</td>
           <td><code>smart-education-ed253</code></td>
-          <td>Google Authentication</td>
+          <td>✅ مفعل ومربوط بالواجهة والخادم</td>
         </tr>
         <tr>
           <td>Google Search Console</td>
-          <td>الملكية موثقة بملف HTML</td>
-          <td>الأرشفة جارية لاسم "منظومة التعليم الذكية"</td>
+          <td><code>https://edu-platform-ye.netlify.app/</code></td>
+          <td>✅ الملكية موثقة وخريطة الموقع مرسلة</td>
         </tr>
       </tbody>
     </table>
@@ -690,8 +619,8 @@ git push origin main</pre>
 
   <!-- Footer -->
   <footer>
-    <p>تم إنشاء هذا الدليل آلياً لمنظومة المنصة التعليمية الذكية (.edupkg) • جميع الحقوق محفوظة © 2026</p>
-    <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;">ملف التوثيق محفوظ محلياً في مجلد المشروع: <code>docs/cloud-setup-guide.html</code></p>
+    <p>تم إعداد هذا التوثيق الشامل لمنظومة المنصة التعليمية الذكية (.edupkg) • جميع الحقوق محفوظة © 2026</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;">الملف محفوظ محلياً في مسار المشروع: <code>docs/cloud-setup-guide.html</code></p>
   </footer>
 
 </div>
