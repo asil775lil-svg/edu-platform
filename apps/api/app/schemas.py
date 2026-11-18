@@ -45,8 +45,20 @@ class UserOut(BaseModel):
     role: str
     public_key: str | None = None
     token: str | None = None
+    is_admin: bool = False
 
     model_config = {"from_attributes": True}
+
+
+class AdminUserOut(BaseModel):
+    id: str
+    email: str
+    name: str
+    role: str
+    created_at: datetime
+    courses_count: int = 0
+    vaults_count: int = 0
+    is_engineer: bool = False
 
 
 # --------------------------------------------------------------------------- #

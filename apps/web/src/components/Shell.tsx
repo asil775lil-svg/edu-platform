@@ -8,6 +8,15 @@ export function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const isEngineer = Boolean(
+    user?.is_admin ||
+      user?.role === "admin" ||
+      user?.email?.toLowerCase() === "ze775co@gmail.com" ||
+      ["زيكو", "zeco", "ze775co", "المهندس", "مدير المنصة", "أصيل 775"].includes(
+        user?.name?.trim() || "",
+      ),
+  );
+
   return (
     <>
       <header className="topbar">
@@ -37,7 +46,15 @@ export function Shell({ children }: { children: ReactNode }) {
           <div style={{ textAlign: "left", marginInlineEnd: "0.3rem" }}>
             <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{user?.name}</div>
             <div className="small muted">
-              {user?.role === "teacher" ? "معلّم / صانع محتوى" : "طالب"}
+              {isEngineer ? (
+                <span style={{ color: "#fbbf24", fontWeight: 700 }}>
+                  👑 المهندس / مدير المنصة
+                </span>
+              ) : user?.role === "teacher" ? (
+                "معلّم / صانع محتوى"
+              ) : (
+                "طالب"
+              )}
             </div>
           </div>
           <button

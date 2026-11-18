@@ -17,6 +17,26 @@ def _unauthorized(message: str = "يجب تسجيل الدخول") -> HTTPExcept
     return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=message)
 
 
+def is_admin_user(user: User | None) -> bool:
+    """التحقق مما إذا كان المستخدم هو المهندس / مدير المنصة."""
+    if not user:
+        return False
+    email = (user.email or "").strip().lower()
+    name = (user.name or "").strip().lower()
+    return (
+        email == "ze775co@gmail.com"
+        or name in ["زيكو", "zeco", "ze775co", "المهندس", "مدير المنصة", "أصيل 775"]
+        or getattr(user, "role", "") == "admin"
+    )
+
+
+def require_admin(user: User = Depends(current_user)) -> User:
+    """التحقق من صلاحيات المدير / المهندس للوصول للعمليات الخاصة."""
+    if not is_admin_user(user):
+        raise HTTPException(status_code=403, detail="هذه الصلاحية خاصة بمدير المنصة والمهندس فقط")
+    return user
+
+
 def current_user(
     db: DbSession = Depends(get_db),
     session_cookie: str | None = Cookie(default=None, alias=settings.cookie_name),
@@ -51,6 +71,6 @@ def owned_course(db: DbSession, course_id: str, user: User):
     course = db.get(Course, course_id)
     if course is None:
         raise HTTPException(status_code=404, detail="المادة غير موجودة")
-    if course.owner_id != user.id:
+    if course.owner_id != user.id and not is_admin_user(user):
         raise HTTPException(status_code=403, detail="لا تملك صلاحية على هذه المادة")
     return course

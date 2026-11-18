@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DbSession
 
-from app.api.deps import current_user
+from app.api.deps import current_user, is_admin_user, require_admin
 from app.core.config import settings
 from app.core.firebase import verify_firebase_token
 from app.core.security import (
@@ -20,9 +20,26 @@ from app.core.security import (
 )
 from app.db.base import get_db
 from app.db.models import Session, User
-from app.schemas import FirebaseLoginIn, LoginIn, ProfileUpdateIn, RegisterIn, UserOut
+from app.schemas import (
+    AdminUserOut,
+    FirebaseLoginIn,
+    LoginIn,
+    ProfileUpdateIn,
+    RegisterIn,
+    UserOut,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _format_user_out(user: User, token: str | None = None) -> UserOut:
+    admin = is_admin_user(user)
+    out = UserOut.model_validate(user)
+    out.token = token
+    out.is_admin = admin
+    if admin:
+        out.role = "admin"
+    return out
 
 
 def _start_session(db: DbSession, user: User, response: Response) -> str:
@@ -66,9 +83,7 @@ def register(payload: RegisterIn, response: Response, db: DbSession = Depends(ge
     user.private_key_enc = priv_enc
     db.commit()
     token = _start_session(db, user, response)
-    out = UserOut.model_validate(user)
-    out.token = token
-    return out
+    return _format_user_out(user, token)
 
 
 @router.post("/login", response_model=UserOut)
@@ -89,9 +104,7 @@ def login(payload: LoginIn, response: Response, db: DbSession = Depends(get_db))
         raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
 
     token = _start_session(db, user, response)
-    out = UserOut.model_validate(user)
-    out.token = token
-    return out
+    return _format_user_out(user, token)
 
 
 
@@ -128,9 +141,7 @@ def firebase_login(
         db.commit()
 
     token = _start_session(db, user, response)
-    out = UserOut.model_validate(user)
-    out.token = token
-    return out
+    return _format_user_out(user, token)
 
 
 
@@ -159,7 +170,7 @@ def update_profile(
         user.password_hash = hash_password(payload.new_password)
 
     db.commit()
-    return user
+    return _format_user_out(user)
 
 
 @router.post("/logout", status_code=204)
@@ -175,4 +186,33 @@ def logout(
 
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(current_user)):
-    return user
+    return _format_user_out(user)
+
+
+@router.get("/admin/users", response_model=list[AdminUserOut])
+def list_admin_users(
+    db: DbSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """عرض قائمة بجميع المستخدمين الذين استخدموا المنصة (خاص بمدير المنصة والمهندس فقط)."""
+    from app.db.models import Course, Vault
+
+    users = db.scalars(select(User).order_by(User.created_at.desc())).all()
+    results: list[AdminUserOut] = []
+    for u in users:
+        courses_count = db.scalar(select(func.count(Course.id)).where(Course.owner_id == u.id)) or 0
+        vaults_count = db.scalar(select(func.count(Vault.id)).where(Vault.user_id == u.id)) or 0
+        is_eng = is_admin_user(u)
+        results.append(
+            AdminUserOut(
+                id=u.id,
+                email=u.email,
+                name=u.name,
+                role="admin" if is_eng else u.role,
+                created_at=u.created_at,
+                courses_count=courses_count,
+                vaults_count=vaults_count,
+                is_engineer=is_eng,
+            )
+        )
+    return results

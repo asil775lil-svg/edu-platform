@@ -1,4 +1,5 @@
 import type {
+  AdminUser,
   AiResult,
   AssetInfo,
   CatalogItem,
@@ -325,6 +326,10 @@ export const api = {
     exportZipUrl: (vaultId: string) => `${BASE}/vaults/${vaultId}/export-zip`,
     downloadUrl: (vaultId: string, fileId: string) => `${BASE}/vaults/${vaultId}/files/${fileId}/download`,
     viewUrl: (vaultId: string, fileId: string) => `${BASE}/vaults/${vaultId}/files/${fileId}/view`,
+  },
+
+  admin: {
+    getUsers: () => request<AdminUser[]>("/auth/admin/users"),
   },
 };
 

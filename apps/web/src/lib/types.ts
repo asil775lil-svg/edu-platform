@@ -4,9 +4,21 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role: Role | "admin";
   public_key?: string | null;
   token?: string;
+  is_admin?: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  created_at: string;
+  courses_count: number;
+  vaults_count: number;
+  is_engineer: boolean;
 }
 
 export interface CourseSummary {

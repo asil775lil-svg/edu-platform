@@ -160,10 +160,15 @@ def list_vaults(
     db: DbSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    """عرض جميع الخزن الخاصة بالمستخدم مع عدد الملفات والحجم الكلي."""
-    vaults = db.scalars(
-        select(Vault).where(Vault.user_id == user.id).order_by(desc(Vault.created_at))
-    ).all()
+    """عرض جميع الخزن الخاصة بالمستخدم مع عدد الملفات والحجم الكلي (وللمهندس عرض كافة الخزن)."""
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vaults = db.scalars(select(Vault).order_by(desc(Vault.created_at))).all()
+    else:
+        vaults = db.scalars(
+            select(Vault).where(Vault.user_id == user.id).order_by(desc(Vault.created_at))
+        ).all()
 
     results: list[VaultOut] = []
     for v in vaults:
@@ -235,7 +240,12 @@ def get_vault_detail(
     user: User = Depends(current_user),
 ):
     """عرض تفاصيل الخزينة ومحتوياتها من الملفات مع دعم البحث وتصفية المجلدات والوسوم."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -299,7 +309,12 @@ def update_vault(
     user: User = Depends(current_user),
 ):
     """تعديل بيانات الخزينة (الاسم، الوصف، الأيقونة)."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -340,7 +355,12 @@ def delete_vault(
     user: User = Depends(current_user),
 ):
     """حذف الخزينة وجميع الملفات المحفوظة داخلها من التخزين وقاعدة البيانات."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -366,7 +386,12 @@ async def import_file_from_url(
     user: User = Depends(current_user),
 ):
     """استيراد ملف من رابط خارجي وحفظه في الخزينة بأي صيغة كانت دون قيود."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -468,7 +493,12 @@ async def batch_import_urls(
     user: User = Depends(current_user),
 ):
     """استيراد روابط متعددة دفعة واحدة في الخزينة."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -560,7 +590,12 @@ async def upload_file_to_vault(
     user: User = Depends(current_user),
 ):
     """رفع واستيراد أي ملف في الخزينة لجميع الصيغ دون استثناء مع المجلد والوسوم."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -717,7 +752,12 @@ def export_vault_as_zip(
     user: User = Depends(current_user),
 ):
     """تصدير كامل محتويات الخزينة كأرشيف ZIP منظم بنقرة واحدة."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 
@@ -766,7 +806,12 @@ def bulk_download_files_as_zip(
     user: User = Depends(current_user),
 ):
     """تحميل الملفات المحددة كأرشيف ZIP واحد."""
-    vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id))
+    else:
+        vault = db.scalar(select(Vault).where(Vault.id == vault_id, Vault.user_id == user.id))
     if not vault:
         raise HTTPException(status_code=404, detail="الخزينة غير موجودة")
 

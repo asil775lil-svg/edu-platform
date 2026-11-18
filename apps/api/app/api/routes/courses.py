@@ -57,9 +57,14 @@ def _out(course: Course) -> CourseOut:
 
 @router.get("", response_model=list[CourseOut])
 def list_courses(db: DbSession = Depends(get_db), user: User = Depends(current_user)):
-    courses = db.scalars(
-        select(Course).where(Course.owner_id == user.id).order_by(Course.updated_at.desc())
-    ).all()
+    from app.api.deps import is_admin_user
+
+    if is_admin_user(user):
+        courses = db.scalars(select(Course).order_by(Course.updated_at.desc())).all()
+    else:
+        courses = db.scalars(
+            select(Course).where(Course.owner_id == user.id).order_by(Course.updated_at.desc())
+        ).all()
     return [_out(course) for course in courses]
 
 
