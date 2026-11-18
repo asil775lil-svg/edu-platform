@@ -30,13 +30,6 @@ def is_admin_user(user: User | None) -> bool:
     )
 
 
-def require_admin(user: User = Depends(current_user)) -> User:
-    """التحقق من صلاحيات المدير / المهندس للوصول للعمليات الخاصة."""
-    if not is_admin_user(user):
-        raise HTTPException(status_code=403, detail="هذه الصلاحية خاصة بمدير المنصة والمهندس فقط")
-    return user
-
-
 def current_user(
     db: DbSession = Depends(get_db),
     session_cookie: str | None = Cookie(default=None, alias=settings.cookie_name),
@@ -62,6 +55,13 @@ def current_user(
     user = db.get(User, record.user_id)
     if user is None:
         raise _unauthorized("حساب غير موجود")
+    return user
+
+
+def require_admin(user: User = Depends(current_user)) -> User:
+    """التحقق من صلاحيات المدير / المهندس للوصول للعمليات الخاصة."""
+    if not is_admin_user(user):
+        raise HTTPException(status_code=403, detail="هذه الصلاحية خاصة بمدير المنصة والمهندس فقط")
     return user
 
 
