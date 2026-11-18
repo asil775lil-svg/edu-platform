@@ -30,6 +30,11 @@ export function VaultReaderModal({ file, vaultId, onClose }: Props) {
   const [tableSearch, setTableSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [fileNotes, setFileNotes] = useState(file.description || "");
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesFeedback, setNotesFeedback] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -59,6 +64,19 @@ export function VaultReaderModal({ file, vaultId, onClose }: Props) {
     navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleSaveNotes() {
+    setSavingNotes(true);
+    try {
+      await api.vaults.updateFile(vaultId, file.id, { description: fileNotes.trim() });
+      setNotesFeedback(true);
+      setTimeout(() => setNotesFeedback(false), 2000);
+    } catch {
+      alert("تعذر حفظ الملاحظة");
+    } finally {
+      setSavingNotes(false);
+    }
   }
 
   const kind = inspectData?.preview_data?.kind || "binary";
@@ -169,6 +187,16 @@ export function VaultReaderModal({ file, vaultId, onClose }: Props) {
               {copied ? "تم النسخ ✓" : "📋 نسخ النص"}
             </button>
           )}
+
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost"
+            style={{ color: notesOpen ? "var(--primary)" : undefined }}
+            onClick={() => setNotesOpen((o) => !o)}
+            title="تدوين ملاحظات حول الملف"
+          >
+            📝 ملاحظاتي {fileNotes ? "•" : ""}
+          </button>
 
           <a
             href={file.download_url}
@@ -313,6 +341,136 @@ export function VaultReaderModal({ file, vaultId, onClose }: Props) {
                 ) : (
                   <div className="muted">المستند فارغ أو لم يُعثر على نصوص بداخله.</div>
                 )}
+              </div>
+            )}
+
+            {/* 2.5 عارض عروض PowerPoint (.pptx) */}
+            {kind === "slides" && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  background: "var(--card)",
+                  borderRadius: "var(--radius)",
+                  border: "1px solid var(--border)",
+                  overflow: "hidden",
+                }}
+              >
+                {/* شريط أدوات الشرائح */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "0.8rem 1.2rem",
+                    background: "var(--card-2)",
+                    borderBottom: "1px solid var(--border)",
+                  }}
+                >
+                  <div className="row" style={{ gap: "0.8rem" }}>
+                    <span style={{ fontSize: "1.3rem" }}>📽️</span>
+                    <div>
+                      <div style={{ fontWeight: 700 }}>عرض تقديمي PowerPoint</div>
+                      <div className="small muted">
+                        الشريحة {activeSlideIndex + 1} من {pData?.slide_count || 1}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row" style={{ gap: "0.5rem" }}>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      disabled={activeSlideIndex <= 0}
+                      onClick={() => setActiveSlideIndex((i) => Math.max(0, i - 1))}
+                    >
+                      ▶️ الشريحة السابقة
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      disabled={!pData?.slides || activeSlideIndex >= pData.slides.length - 1}
+                      onClick={() => setActiveSlideIndex((i) => Math.min((pData?.slides?.length || 1) - 1, i + 1))}
+                    >
+                      الشريحة التالية ◀️
+                    </button>
+                  </div>
+                </div>
+
+                {/* لوحة الشريحة المعروضة */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "2rem",
+                    background: "#080d1a",
+                    overflow: "auto",
+                  }}
+                >
+                  {(() => {
+                    const slide = pData?.slides?.[activeSlideIndex];
+                    if (!slide) return <div className="empty">لا توجد شرائح</div>;
+                    return (
+                      <div
+                        style={{
+                          width: "100%",
+                          maxWidth: "800px",
+                          minHeight: "450px",
+                          background: "var(--card)",
+                          border: "2px solid var(--border)",
+                          borderRadius: "var(--radius)",
+                          padding: "2.5rem 3rem",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
+                        }}
+                      >
+                        <div>
+                          <div className="small muted" style={{ marginBottom: "0.5rem" }}>
+                            شريحة {slide.slide_number}
+                          </div>
+                          <h2
+                            style={{
+                              color: "#93c5fd",
+                              fontSize: "1.6rem",
+                              margin: "0 0 1.5rem",
+                              borderBottom: "2px solid var(--primary-soft)",
+                              paddingBottom: "0.5rem",
+                            }}
+                          >
+                            {slide.title}
+                          </h2>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", fontSize: "1.1rem" }}>
+                            {slide.content.map((point, pIdx) => (
+                              <div key={pIdx} className="row" style={{ alignItems: "flex-start", gap: "0.6rem" }}>
+                                <span style={{ color: "var(--primary)", marginTop: "0.2rem" }}>•</span>
+                                <div>{point}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            borderTop: "1px solid var(--border)",
+                            paddingTop: "0.6rem",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontSize: "0.8rem",
+                            color: "var(--muted)",
+                          }}
+                        >
+                          <span>{file.filename}</span>
+                          <span>{slide.slide_number} / {pData?.slide_count || 1}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
 
@@ -805,6 +963,66 @@ export function VaultReaderModal({ file, vaultId, onClose }: Props) {
           </>
         )}
       </main>
+
+      {/* درج الملاحظات الجانبي */}
+      {notesOpen && (
+        <aside
+          style={{
+            position: "absolute",
+            top: "60px",
+            bottom: 0,
+            left: 0,
+            width: "360px",
+            maxWidth: "90vw",
+            background: "var(--card)",
+            borderRight: "1px solid var(--border)",
+            padding: "1.2rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            boxShadow: "5px 0 25px rgba(0,0,0,0.5)",
+            zIndex: 10,
+          }}
+        >
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>📝 ملاحظات وشروحات الملف</div>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setNotesOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="small muted" style={{ margin: 0 }}>
+            يمكنك تدوين ملاحظات دراسية وشروحات حول هذا الملف لحفظها داخل الخزينة:
+          </p>
+
+          <textarea
+            className="input"
+            rows={10}
+            style={{ flex: 1, resize: "none" }}
+            value={fileNotes}
+            onChange={(e) => setFileNotes(e.target.value)}
+            placeholder="اكتب ملاحظاتك وتلخيصك لهذا الملف هنا..."
+          />
+
+          <div className="row" style={{ justifyContent: "space-between", width: "100%" }}>
+            <div>
+              {notesFeedback && <span className="small" style={{ color: "var(--green)" }}>تم الحفظ بنجاح ✓</span>}
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={savingNotes}
+              onClick={handleSaveNotes}
+            >
+              {savingNotes ? <span className="spinner" /> : "حفظ الملاحظة"}
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

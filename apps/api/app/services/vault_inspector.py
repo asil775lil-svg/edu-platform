@@ -232,6 +232,48 @@ def _inspect_sqlite(path: Path) -> dict[str, Any]:
     return {"kind": "database", "tables": tables_data}
 
 
+def _inspect_pptx(path: Path) -> dict[str, Any]:
+    """استخراج الشرائح والعناوين والنصوص من عروض PowerPoint (.pptx) مباشرة."""
+    slides: list[dict[str, Any]] = []
+    try:
+        with zipfile.ZipFile(path, "r") as z:
+            slide_names = sorted(
+                [n for n in z.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml")],
+                key=lambda x: int("".join(filter(str.isdigit, x)) or 0),
+            )
+            ns = {
+                "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+                "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+            }
+
+            for idx, s_name in enumerate(slide_names[:50]):  # حد أقصى 50 شريحة
+                tree = ET.fromstring(z.read(s_name))
+                paragraphs: list[str] = []
+                for p in tree.findall(".//a:p", ns):
+                    t_parts = [t.text for t in p.findall(".//a:t", ns) if t.text]
+                    p_text = "".join(t_parts).strip()
+                    if p_text:
+                        paragraphs.append(p_text)
+
+                slide_title = paragraphs[0] if paragraphs else f"الشريحة {idx + 1}"
+                body_points = paragraphs[1:] if len(paragraphs) > 1 else []
+                slides.append({
+                    "slide_number": idx + 1,
+                    "title": slide_title,
+                    "content": body_points,
+                    "all_text": paragraphs,
+                })
+    except Exception as exc:
+        slides = [{
+            "slide_number": 1,
+            "title": "خطأ",
+            "content": [f"تعذر استخراج شرائح العرض: {str(exc)}"],
+            "all_text": [],
+        }]
+
+    return {"kind": "slides", "slide_count": len(slides), "slides": slides}
+
+
 def _inspect_binary(path: Path) -> dict[str, Any]:
     """فحص الملفات الثنائية والتنفيذية مع استخراج الترويسة ومصفوفة Hex Dump."""
     try:
@@ -265,6 +307,10 @@ def inspect_file(path: Path, filename: str, ext: str, mime: str) -> dict[str, An
     # 2. مستندات Word
     if e in (".docx", ".dotx"):
         return _inspect_docx(path)
+
+    # 2.5 عروض PowerPoint
+    if e in (".pptx", ".potx", ".ppsx"):
+        return _inspect_pptx(path)
 
     # 3. جداول Excel
     if e in (".xlsx", ".xlsm", ".xltx"):

@@ -133,7 +133,6 @@ async def run_ai_action(
         try:
             import httpx
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.gemini_api_key}"
             prompt = ""
             if action == "generate_quiz":
                 prompt = (
@@ -145,21 +144,27 @@ async def run_ai_action(
             elif action == "summarize":
                 prompt = (
                     f"قم بتلخيص نص الدرس التالي إلى فقرة موجزة و 3-5 نقاط رئيسية باللغة العربية:\n{text}\n"
-                    "أرجع النتيجة بصيغة JSON فقط: {'summary': '...', 'key_points': ['...', '...']}"
+                    "أرجع النتيجة بصيغة JSON فقط بالشكل التالي: {'summary': 'نص الملخص هنا', 'key_points': ['نقطة 1', 'نقطة 2']}"
                 )
             else:
-                prompt = f"اشرح المفهوم التالي بلغة بسيطة ومباشرة للطالب بناءً على الدرس:\n{text}"
+                prompt = (
+                    f"أنت معلم ذكي ومتميز. اشرح المفهوم التالي بلغة بسيطة ومباشرة للطالب بناءً على نص الدرس التالي:\n{text}\n\n"
+                    "أرجع النتيجة بصيغة JSON فقط بالشكل التالي: {'explanation': 'الشرح المبسط هنا', 'tips': ['نصيحة 1', 'نصيحة 2']}"
+                )
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=8.0) as client:
                 res = None
-                for model_name in ["gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-flash"]:
+                for model_name in ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-pro-latest"]:
                     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={settings.gemini_api_key}"
                     try:
                         resp = await client.post(
                             url,
                             json={
                                 "contents": [{"parts": [{"text": prompt}]}],
-                                "generationConfig": {"temperature": 0.4},
+                                "generationConfig": {
+                                    "temperature": 0.3,
+                                    "responseMimeType": "application/json",
+                                },
                             },
                         )
                         if resp.status_code == 200:
@@ -171,10 +176,33 @@ async def run_ai_action(
                 if res is not None and res.status_code == 200:
                     data = res.json()
                     raw_content = data["candidates"][0]["content"]["parts"][0]["text"]
-                    # تنظيف كود markdown إن وجد
-                    cleaned_json = re.sub(r"^```(?:json)?|```$", "", raw_content.strip(), flags=re.MULTILINE).strip()
-                    parsed = json.loads(cleaned_json)
-                    return {"result": parsed}, "gemini"
+                    cleaned = raw_content.strip()
+                    if cleaned.startswith("```"):
+                        lines = cleaned.splitlines()
+                        if lines and lines[0].startswith("```"):
+                            lines = lines[1:]
+                        if lines and lines[-1].startswith("```"):
+                            lines = lines[:-1]
+                        cleaned = "\n".join(lines).strip()
+                    parsed = json.loads(cleaned)
+
+                    if action == "generate_quiz":
+                        if isinstance(parsed, list):
+                            return {"quizzes": parsed}, "gemini"
+                        elif isinstance(parsed, dict) and "quizzes" in parsed:
+                            return parsed, "gemini"
+                        elif isinstance(parsed, dict) and "result" in parsed and isinstance(parsed["result"], list):
+                            return {"quizzes": parsed["result"]}, "gemini"
+                    elif action == "summarize":
+                        if isinstance(parsed, dict) and "summary" in parsed:
+                            return parsed, "gemini"
+                        elif isinstance(parsed, list):
+                            return {"summary": " ".join(parsed), "key_points": parsed}, "gemini"
+                    else:
+                        if isinstance(parsed, dict) and "explanation" in parsed:
+                            return parsed, "gemini"
+                        else:
+                            return {"explanation": str(parsed), "tips": []}, "gemini"
         except Exception:
             # الرجوع للوضع المحلي عند حدوث أي خطأ في الشبكة أو التحليل
             pass

@@ -222,6 +222,8 @@ class VaultFile(Base):
     source_type: Mapped[str] = mapped_column(String(32), default="upload")  # external_url | upload | api
     source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    folder: Mapped[str | None] = mapped_column(String(120), nullable=True, default=None)
+    tags: Mapped[list] = mapped_column(JSON, default=list)
     metadata_info: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)

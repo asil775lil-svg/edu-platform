@@ -648,16 +648,22 @@ export default function VaultsPage() {
                         </div>
                       </div>
 
-                      {/* اسم الملف */}
+                      {/* اسم الملف — ينقر لفتح القارئ والمعاينة المباشرة */}
                       <div
+                        onClick={() => setReadingFile(file)}
                         style={{
                           fontWeight: 600,
-                          fontSize: "0.95rem",
+                          fontSize: "0.98rem",
                           lineHeight: 1.4,
                           marginBottom: "0.4rem",
                           wordBreak: "break-all",
+                          cursor: "pointer",
+                          color: "#bfdbfe",
+                          transition: "color 0.15s",
                         }}
-                        title={file.filename}
+                        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--primary)")}
+                        onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#bfdbfe")}
+                        title="انقر لفتح الملف وقراءته من داخل الخزينة"
                       >
                         {file.filename}
                       </div>
@@ -697,16 +703,24 @@ export default function VaultsPage() {
                     >
                       <div className="row" style={{ gap: "0.3rem" }}>
                         <button
-                          className="btn btn-sm btn-ghost"
-                          title="معاينة وتفاصيل الملف"
+                          className="btn btn-sm btn-primary"
+                          style={{ padding: "0.3rem 0.65rem", fontSize: "0.8rem" }}
+                          title="فتح وقراءة الملف بصيغته الأصلية"
+                          onClick={() => setReadingFile(file)}
+                        >
+                          📖 فتح وقراءة
+                        </button>
+                        <button
+                          className="icon-btn"
+                          title="بيانات وتفاصيل الملف"
                           onClick={() => setPreviewFile(file)}
                         >
-                          👁️ معاينة
+                          ℹ️
                         </button>
                         <a
                           href={file.download_url}
                           download
-                          className="btn btn-sm btn-ghost"
+                          className="icon-btn"
                           title="تحميل الملف"
                         >
                           ⬇️
@@ -822,6 +836,14 @@ export default function VaultsPage() {
                 : null
             );
           }}
+        />
+      )}
+
+      {readingFile && activeVault && (
+        <VaultReaderModal
+          file={readingFile}
+          vaultId={activeVault.id}
+          onClose={() => setReadingFile(null)}
         />
       )}
 

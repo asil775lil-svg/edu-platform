@@ -260,6 +260,8 @@ class VaultFileOut(BaseModel):
     source_type: str  # 'external_url' | 'upload' | 'api'
     source_url: str | None = None
     description: str | None = None
+    folder: str | None = None
+    tags: list[str] = []
     metadata_info: dict[str, Any] = {}
     created_at: datetime
     updated_at: datetime
@@ -285,17 +287,42 @@ class VaultOut(BaseModel):
 
 class VaultDetailOut(VaultOut):
     files: list[VaultFileOut] = []
+    folders: list[str] = []
+    all_tags: list[str] = []
 
 
 class VaultImportUrlIn(BaseModel):
     url: str = Field(min_length=4)
     filename: str | None = None
     description: str | None = None
+    folder: str | None = None
+    tags: list[str] = []
+
+
+class VaultBatchImportUrlsIn(BaseModel):
+    urls: list[str] = Field(min_length=1)
+    folder: str | None = None
+    tags: list[str] = []
+
+
+class VaultBulkDeleteIn(BaseModel):
+    file_ids: list[str] = Field(min_length=1)
+
+
+class VaultBulkMoveIn(BaseModel):
+    file_ids: list[str] = Field(min_length=1)
+    target_vault_id: str
+
+
+class VaultBulkDownloadIn(BaseModel):
+    file_ids: list[str] = Field(min_length=1)
 
 
 class VaultFileUpdate(BaseModel):
     filename: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
+    folder: str | None = None
+    tags: list[str] | None = None
     vault_id: str | None = None
 
 
@@ -311,8 +338,11 @@ class VaultFileInspectOut(BaseModel):
     source_type: str
     source_url: str | None = None
     description: str | None = None
+    folder: str | None = None
+    tags: list[str] = []
     created_at: datetime
     preview_data: dict[str, Any]
+
 
 
 

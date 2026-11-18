@@ -8,6 +8,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from sqlalchemy import text
+
 from app.api.routes import ai, assets, auth, courses, discussions, library, packages, vaults
 from app.core.config import settings
 from app.db.base import Base, engine
@@ -17,6 +19,17 @@ from app.services.packages import EduPkgError
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    with engine.connect() as conn:
+        try:
+            res = conn.execute(text("PRAGMA table_info(vault_files)")).fetchall()
+            cols = [r[1] for r in res]
+            if cols and "folder" not in cols:
+                conn.execute(text("ALTER TABLE vault_files ADD COLUMN folder VARCHAR(120)"))
+            if cols and "tags" not in cols:
+                conn.execute(text("ALTER TABLE vault_files ADD COLUMN tags JSON DEFAULT '[]'"))
+            conn.commit()
+        except Exception:
+            pass
     yield
 
 

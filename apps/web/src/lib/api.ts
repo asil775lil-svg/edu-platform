@@ -200,25 +200,51 @@ export const api = {
     list: () => request<Vault[]>("/vaults"),
     create: (body: { name: string; description?: string; icon?: string }) =>
       request<Vault>("/vaults", { method: "POST", body: JSON.stringify(body) }),
-    get: (id: string, params?: { q?: string; category?: string }) => {
+    get: (
+      id: string,
+      params?: { q?: string; category?: string; folder?: string; tag?: string },
+    ) => {
       const q = new URLSearchParams();
       if (params?.q) q.set("q", params.q);
       if (params?.category) q.set("category", params.category);
+      if (params?.folder) q.set("folder", params.folder);
+      if (params?.tag) q.set("tag", params.tag);
       const queryStr = q.toString() ? `?${q.toString()}` : "";
       return request<VaultDetail>(`/vaults/${id}${queryStr}`);
     },
     update: (id: string, body: { name?: string; description?: string; icon?: string }) =>
       request<Vault>(`/vaults/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     delete: (id: string) => request<void>(`/vaults/${id}`, { method: "DELETE" }),
-    importUrl: (vaultId: string, body: { url: string; filename?: string; description?: string }) =>
+    importUrl: (
+      vaultId: string,
+      body: { url: string; filename?: string; description?: string; folder?: string; tags?: string[] },
+    ) =>
       request<VaultFile>(`/vaults/${vaultId}/import-url`, {
         method: "POST",
         body: JSON.stringify(body),
       }),
-    upload: (vaultId: string, file: File, description?: string) => {
+    importUrls: (
+      vaultId: string,
+      body: { urls: string[]; folder?: string; tags?: string[] },
+    ) =>
+      request<VaultFile[]>(`/vaults/${vaultId}/import-urls`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    upload: (
+      vaultId: string,
+      file: File,
+      description?: string,
+      folder?: string,
+      tags?: string[],
+    ) => {
       const form = new FormData();
       form.append("file", file);
-      const queryStr = description ? `?description=${encodeURIComponent(description)}` : "";
+      const q = new URLSearchParams();
+      if (description) q.set("description", description);
+      if (folder) q.set("folder", folder);
+      if (tags && tags.length > 0) q.set("tags", tags.join(","));
+      const queryStr = q.toString() ? `?${q.toString()}` : "";
       return request<VaultFile>(`/vaults/${vaultId}/upload${queryStr}`, {
         method: "POST",
         body: form,
@@ -231,7 +257,13 @@ export const api = {
     updateFile: (
       vaultId: string,
       fileId: string,
-      body: { filename?: string; description?: string; vault_id?: string },
+      body: {
+        filename?: string;
+        description?: string;
+        folder?: string | null;
+        tags?: string[];
+        vault_id?: string;
+      },
     ) =>
       request<VaultFile>(`/vaults/${vaultId}/files/${fileId}`, {
         method: "PATCH",
@@ -239,6 +271,35 @@ export const api = {
       }),
     deleteFile: (vaultId: string, fileId: string) =>
       request<void>(`/vaults/${vaultId}/files/${fileId}`, { method: "DELETE" }),
+    bulkDelete: (vaultId: string, fileIds: string[]) =>
+      request<void>(`/vaults/${vaultId}/files/bulk-delete`, {
+        method: "POST",
+        body: JSON.stringify({ file_ids: fileIds }),
+      }),
+    bulkMove: (vaultId: string, fileIds: string[], targetVaultId: string) =>
+      request<{ moved_count: number }>(`/vaults/${vaultId}/files/bulk-move`, {
+        method: "POST",
+        body: JSON.stringify({ file_ids: fileIds, target_vault_id: targetVaultId }),
+      }),
+    bulkDownloadZip: async (vaultId: string, fileIds: string[]) => {
+      const resp = await fetch(`${BASE}/vaults/${vaultId}/files/bulk-download-zip`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ file_ids: fileIds }),
+      });
+      if (!resp.ok) throw new Error("تعذر تحميل الملفات المحددة");
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "selected_files.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    },
+    exportZipUrl: (vaultId: string) => `${BASE}/vaults/${vaultId}/export-zip`,
     downloadUrl: (vaultId: string, fileId: string) => `${BASE}/vaults/${vaultId}/files/${fileId}/download`,
     viewUrl: (vaultId: string, fileId: string) => `${BASE}/vaults/${vaultId}/files/${fileId}/view`,
   },

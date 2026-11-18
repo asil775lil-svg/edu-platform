@@ -250,6 +250,8 @@ export interface VaultFile {
   source_type: "external_url" | "upload" | "api";
   source_url: string | null;
   description: string | null;
+  folder?: string | null;
+  tags?: string[];
   metadata_info: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -271,6 +273,8 @@ export interface Vault {
 
 export interface VaultDetail extends Vault {
   files: VaultFile[];
+  folders: string[];
+  all_tags: string[];
 }
 
 export interface VaultFileInspect {
@@ -285,9 +289,11 @@ export interface VaultFileInspect {
   source_type: string;
   source_url: string | null;
   description: string | null;
+  folder?: string | null;
+  tags?: string[];
   created_at: string;
   preview_data: {
-    kind: "pdf" | "docx" | "spreadsheet" | "archive" | "code" | "media" | "image" | "database" | "binary";
+    kind: "pdf" | "docx" | "slides" | "spreadsheet" | "archive" | "code" | "media" | "image" | "database" | "binary";
     language?: string;
     content?: string;
     line_count?: number;
@@ -297,6 +303,13 @@ export interface VaultFileInspect {
       text?: string;
       rows?: string[][];
     }>;
+    slides?: Array<{
+      slide_number: number;
+      title: string;
+      content: string[];
+      all_text: string[];
+    }>;
+    slide_count?: number;
     sheets?: Array<{ name: string; rows: string[][] }>;
     file_count?: number;
     total_uncompressed?: number;

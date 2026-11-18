@@ -143,8 +143,22 @@ def test_vaults_lifecycle_and_multiformat(client: TestClient):
     assert patch_res.json()["filename"] == "main_script.py"
     assert patch_res.json()["description"] == "السكربت الرئيسي"
 
-    # 9. استيراد ملف من رابط خارجي (External URL Import)
-    # سنحاكي استجابة httpx
+    # 9. استيراد ملف من رابط خارجي (External URL Import) مع فحص الحماية من SSRF
+    # فحص منع الروابط المحلية الخاصة (SSRF Protection)
+    ssrf_res = client.post(
+        f"/api/vaults/{vault_id}/import-url",
+        json={"url": "http://127.0.0.1:8000/internal", "description": "محاولة اختراق داخلي"},
+    )
+    assert ssrf_res.status_code == 400
+    assert "SSRF" in ssrf_res.text or "داخلية" in ssrf_res.text
+
+    ssrf_res2 = client.post(
+        f"/api/vaults/{vault_id}/import-url",
+        json={"url": "http://localhost/secret", "description": "محاولة اختراق داخلي"},
+    )
+    assert ssrf_res2.status_code == 400
+
+    # استيراد سليم
     fake_content = b"PDF_DOCUMENT_CONTENT_SAMPLE"
 
     class FakeResponse:
@@ -176,7 +190,7 @@ def test_vaults_lifecycle_and_multiformat(client: TestClient):
     with patch("httpx.AsyncClient", return_value=FakeClient()):
         ext_res = client.post(
             f"/api/vaults/{vault_id}/import-url",
-            json={"url": "https://example.com/downloads/manual.pdf", "description": "دليل من جهة خارجية"},
+            json={"url": "https://example.com/downloads/manual.pdf", "description": "دليل من جهة خارجية", "folder": "مراجع", "tags": ["مهم", "pdf"]},
         )
         assert ext_res.status_code == 200, ext_res.text
         ext_file = ext_res.json()
@@ -185,6 +199,14 @@ def test_vaults_lifecycle_and_multiformat(client: TestClient):
         assert ext_file["filename"] == "external_guide.pdf"
         assert ext_file["ext"] == ".pdf"
         assert ext_file["size"] == len(fake_content)
+        assert ext_file["folder"] == "مراجع"
+        assert "مهم" in ext_file["tags"]
+
+    # 9.5 اختبار تصدير الخزينة كـ ZIP كامل
+    export_zip_res = client.get(f"/api/vaults/{vault_id}/export-zip")
+    assert export_zip_res.status_code == 200
+    assert export_zip_res.headers.get("content-type") == "application/zip"
+    assert len(export_zip_res.content) > 0
 
     # 10. نقل ملف إلى خزينة ثانية
     v2_res = client.post("/api/vaults", json={"name": "الخزينة الثانية", "icon": "📁"})
@@ -197,6 +219,29 @@ def test_vaults_lifecycle_and_multiformat(client: TestClient):
     )
     assert move_res.status_code == 200
     assert move_res.json()["vault_id"] == v2_id
+
+    # اختبار العمليات الجماعية: التحميل الجماعي كـ ZIP
+    bulk_dl_res = client.post(
+        f"/api/vaults/{vault_id}/files/bulk-download-zip",
+        json={"file_ids": [py_data["id"], exe_data["id"]]},
+    )
+    assert bulk_dl_res.status_code == 200
+    assert bulk_dl_res.headers.get("content-type") == "application/zip"
+
+    # اختبار العمليات الجماعية: النقل الجماعي
+    bulk_move_res = client.post(
+        f"/api/vaults/{vault_id}/files/bulk-move",
+        json={"file_ids": [py_data["id"], exe_data["id"]], "target_vault_id": v2_id},
+    )
+    assert bulk_move_res.status_code == 200
+    assert bulk_move_res.json()["moved_count"] == 2
+
+    # اختبار العمليات الجماعية: الحذف الجماعي
+    bulk_del_res = client.post(
+        f"/api/vaults/{v2_id}/files/bulk-delete",
+        json={"file_ids": [py_data["id"], exe_data["id"]]},
+    )
+    assert bulk_del_res.status_code == 204
 
     # 11. حذف ملف
     del_res = client.delete(f"/api/vaults/{v2_id}/files/{zip_data['id']}")
