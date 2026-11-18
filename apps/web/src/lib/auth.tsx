@@ -14,6 +14,7 @@ import {
   githubProvider,
   signInWithPopup,
   firebaseSignOut,
+  onAuthStateChanged,
 } from "./firebase";
 import type { User } from "./types";
 
@@ -49,8 +50,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refresh().finally(() => setLoading(false));
-  }, [refresh]);
+    let mounted = true;
+
+    async function initAuth() {
+      try {
+        const u = await api.me();
+        if (mounted && u) {
+          setUser(u);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // me() failed, check Firebase
+      }
+
+      const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+        if (!mounted) return;
+        if (fbUser) {
+          try {
+            const idToken = await fbUser.getIdToken();
+            const loggedUser = await api.firebaseLogin({
+              id_token: idToken,
+              role: "teacher",
+              name: fbUser.displayName || undefined,
+            });
+            if (mounted) setUser(loggedUser);
+          } catch {
+            if (mounted) setUser(null);
+          }
+        } else {
+          if (mounted) setUser(null);
+        }
+        if (mounted) setLoading(false);
+      });
+
+      return () => unsubscribe();
+    }
+
+    initAuth();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const value = useMemo<AuthState>(
     () => ({

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session as DbSession
 
 from app.core.config import settings
@@ -20,10 +20,19 @@ def _unauthorized(message: str = "يجب تسجيل الدخول") -> HTTPExcept
 def current_user(
     db: DbSession = Depends(get_db),
     session_cookie: str | None = Cookie(default=None, alias=settings.cookie_name),
+    authorization: str | None = Header(default=None),
 ) -> User:
-    if not session_cookie:
+    token = session_cookie
+    if not token and authorization:
+        parts = authorization.strip().split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+        elif len(parts) == 1:
+            token = parts[0]
+
+    if not token:
         raise _unauthorized()
-    record = db.get(Session, token_fingerprint(session_cookie))
+    record = db.get(Session, token_fingerprint(token))
     if record is None:
         raise _unauthorized("جلسة غير صالحة")
     if record.expires_at.replace(tzinfo=UTC) < datetime.now(UTC):

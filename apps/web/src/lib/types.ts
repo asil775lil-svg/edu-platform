@@ -6,6 +6,7 @@ export interface User {
   name: string;
   role: Role;
   public_key?: string | null;
+  token?: string;
 }
 
 export interface CourseSummary {

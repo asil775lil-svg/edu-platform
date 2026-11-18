@@ -43,9 +43,14 @@ function messageFrom(detail: unknown, fallback: string): string {
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const isForm = init.body instanceof FormData;
+  const token = typeof window !== "undefined" ? localStorage.getItem("edu_token") : null;
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   const response = await fetch(`${BASE}${path}`, {
     credentials: "include",
-    headers: isForm ? {} : { "Content-Type": "application/json", ...(init.headers || {}) },
+    headers: isForm
+      ? { ...authHeaders, ...(init.headers || {}) }
+      : { "Content-Type": "application/json", ...authHeaders, ...(init.headers || {}) },
     ...init,
   });
 
@@ -55,6 +60,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const data = text ? JSON.parse(text) : null;
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") {
+      // Do not clear immediately on single 401 to avoid race conditions, but clear if me() failed
+      if (path === "/auth/me") {
+        localStorage.removeItem("edu_token");
+      }
+    }
     throw new ApiError(
       response.status,
       messageFrom(data?.detail, "حدث خطأ غير متوقع"),
@@ -65,13 +76,25 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  register: (body: { email: string; password: string; name: string; role: string }) =>
-    request<User>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  login: (body: { login?: string; email?: string; password: string }) =>
-    request<User>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
-  firebaseLogin: (body: { id_token: string; role?: string; name?: string }) =>
-    request<User>("/auth/firebase", { method: "POST", body: JSON.stringify(body) }),
-  logout: () => request<void>("/auth/logout", { method: "POST" }),
+  register: async (body: { email: string; password: string; name: string; role: string }) => {
+    const res = await request<User>("/auth/register", { method: "POST", body: JSON.stringify(body) });
+    if (res?.token) localStorage.setItem("edu_token", res.token);
+    return res;
+  },
+  login: async (body: { login?: string; email?: string; password: string }) => {
+    const res = await request<User>("/auth/login", { method: "POST", body: JSON.stringify(body) });
+    if (res?.token) localStorage.setItem("edu_token", res.token);
+    return res;
+  },
+  firebaseLogin: async (body: { id_token: string; role?: string; name?: string }) => {
+    const res = await request<User>("/auth/firebase", { method: "POST", body: JSON.stringify(body) });
+    if (res?.token) localStorage.setItem("edu_token", res.token);
+    return res;
+  },
+  logout: async () => {
+    localStorage.removeItem("edu_token");
+    return request<void>("/auth/logout", { method: "POST" });
+  },
   me: () => request<User>("/auth/me"),
   updateProfile: (body: {
     name?: string;

@@ -44,6 +44,7 @@ class UserOut(BaseModel):
     name: str
     role: str
     public_key: str | None = None
+    token: str | None = None
 
     model_config = {"from_attributes": True}
 

@@ -5,6 +5,7 @@ import type { Block, BlockType, CalloutVariant, Lesson } from "../lib/types";
 import { useAssetUrl } from "../lib/useAssets";
 import { AiAssistantModal } from "./AiAssistantModal";
 import { RichText } from "./RichText";
+import { VaultPickerModal } from "./VaultPickerModal";
 
 export function BlockEditor({
   lesson,
@@ -18,6 +19,7 @@ export function BlockEditor({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showVaultPicker, setShowVaultPicker] = useState(false);
 
   const patch = (blockId: string, changes: Partial<Block>) =>
     onChange({
@@ -206,6 +208,19 @@ export function BlockEditor({
           + سؤال
         </button>
         <button
+          type="button"
+          className="btn btn-sm btn-ghost"
+          style={{
+            border: "1px dashed #3b82f6",
+            color: "#60a5fa",
+            background: "rgba(59, 130, 246, 0.08)",
+          }}
+          onClick={() => setShowVaultPicker(true)}
+          title="إدراج ملف أو وسيط أو مرجع مباشرة من الخزائن التعليمية"
+        >
+          🗄️ إدراج من الخزائن
+        </button>
+        <button
           className="btn btn-sm btn-ghost"
           style={{
             border: "1px dashed var(--primary)",
@@ -232,6 +247,16 @@ export function BlockEditor({
           onClose={() => setShowAiModal(false)}
           onApplyBlocks={(newBlocks) => {
             onChange({ ...lesson, blocks: [...lesson.blocks, ...newBlocks] });
+          }}
+        />
+      )}
+
+      {showVaultPicker && (
+        <VaultPickerModal
+          onClose={() => setShowVaultPicker(false)}
+          onSelectBlock={(newBlock: Block) => {
+            onChange({ ...lesson, blocks: [...lesson.blocks, newBlock] });
+            setShowVaultPicker(false);
           }}
         />
       )}

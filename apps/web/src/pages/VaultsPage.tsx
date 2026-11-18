@@ -61,6 +61,14 @@ export default function VaultsPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedFolder, setSelectedFolder] = useState<string>("");
+  const [selectedTag, setSelectedTag] = useState<string>("");
+
+  // Bulk actions state
+  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [targetVaultId, setTargetVaultId] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Modals state
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -72,6 +80,8 @@ export default function VaultsPage() {
   const [editingFile, setEditingFile] = useState<VaultFile | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [descValue, setDescValue] = useState("");
+  const [folderValue, setFolderValue] = useState("");
+  const [tagsValue, setTagsValue] = useState("");
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   async function loadVaults() {
@@ -82,9 +92,7 @@ export default function VaultsPage() {
       setVaults(list);
 
       if (vaultId) {
-        await loadVaultDetail(vaultId);
-      } else if (list.length > 0 && !activeVault) {
-        // إذا كنا على الصفحة الرئيسية للخزن، لا نلزم بالاختيار التلقائي لتوفير نظرة عامة
+        await loadVaultDetail(vaultId, searchQuery, selectedCategory, selectedFolder, selectedTag);
       }
     } catch (err: unknown) {
       setError(err instanceof ApiError ? err.message : "تعذر تحميل الخزن");
@@ -93,9 +101,20 @@ export default function VaultsPage() {
     }
   }
 
-  async function loadVaultDetail(id: string, q = searchQuery, cat = selectedCategory) {
+  async function loadVaultDetail(
+    id: string,
+    q = searchQuery,
+    cat = selectedCategory,
+    f = selectedFolder,
+    t = selectedTag
+  ) {
     try {
-      const detail = await api.vaults.get(id, { q: q || undefined, category: cat || undefined });
+      const detail = await api.vaults.get(id, {
+        q: q || undefined,
+        category: cat || undefined,
+        folder: f || undefined,
+        tag: t || undefined,
+      });
       setActiveVault(detail);
     } catch (err: unknown) {
       setError(err instanceof ApiError ? err.message : "تعذر فتح الخزينة");
@@ -104,22 +123,29 @@ export default function VaultsPage() {
 
   useEffect(() => {
     loadVaults();
+    setSelectedFileIds([]);
   }, [vaultId]);
 
   useEffect(() => {
     if (activeVault) {
-      loadVaultDetail(activeVault.id, searchQuery, selectedCategory);
+      loadVaultDetail(activeVault.id, searchQuery, selectedCategory, selectedFolder, selectedTag);
     }
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, selectedFolder, selectedTag]);
 
   function openVault(id: string) {
     navigate(`/vaults/${id}`);
-    loadVaultDetail(id);
+    setSelectedFolder("");
+    setSelectedTag("");
+    setSelectedFileIds([]);
+    loadVaultDetail(id, "", "all", "", "");
   }
 
   function backToOverview() {
     navigate("/vaults");
     setActiveVault(null);
+    setSelectedFolder("");
+    setSelectedTag("");
+    setSelectedFileIds([]);
   }
 
   async function handleSaveVault(data: { name: string; description: string; icon: string }) {
@@ -156,15 +182,8 @@ export default function VaultsPage() {
     if (!window.confirm("هل أنت متأكد من حذف هذا الملف نهائياً من الخزينة؟")) return;
     try {
       await api.vaults.deleteFile(activeVault.id, fileId);
-      setActiveVault((prev) =>
-        prev
-          ? {
-              ...prev,
-              file_count: Math.max(0, prev.file_count - 1),
-              files: prev.files.filter((f) => f.id !== fileId),
-            }
-          : null
-      );
+      setSelectedFileIds((prev) => prev.filter((id) => id !== fileId));
+      await loadVaultDetail(activeVault.id);
       // تحديث قائمة الخزن العامة أيضاً
       setVaults((prev) =>
         prev
@@ -184,10 +203,18 @@ export default function VaultsPage() {
     e.preventDefault();
     if (!activeVault || !editingFile) return;
     try {
+      const parsedTags = tagsValue
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       const updated = await api.vaults.updateFile(activeVault.id, editingFile.id, {
         filename: renameValue.trim() || undefined,
         description: descValue.trim() || undefined,
+        folder: folderValue.trim() || null,
+        tags: parsedTags,
       });
+
       setActiveVault((prev) =>
         prev
           ? {
@@ -197,8 +224,77 @@ export default function VaultsPage() {
           : null
       );
       setEditingFile(null);
+      await loadVaultDetail(activeVault.id);
     } catch {
       alert("تعذر تحديث بيانات الملف");
+    }
+  }
+
+  // Bulk actions handlers
+  function toggleSelectAll() {
+    if (!activeVault) return;
+    if (selectedFileIds.length === activeVault.files.length) {
+      setSelectedFileIds([]);
+    } else {
+      setSelectedFileIds(activeVault.files.map((f) => f.id));
+    }
+  }
+
+  function toggleSelectFile(id: string) {
+    setSelectedFileIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  }
+
+  async function handleBulkDownload() {
+    if (!activeVault || selectedFileIds.length === 0) return;
+    try {
+      setBulkBusy(true);
+      await api.vaults.bulkDownloadZip(activeVault.id, selectedFileIds);
+    } catch {
+      alert("تعذر تحميل الملفات المحددة");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (!activeVault || selectedFileIds.length === 0) return;
+    if (
+      !window.confirm(
+        `هل أنت متأكد من حذف ${selectedFileIds.length} ملفاً محدداً نهائياً من الخزينة؟`
+      )
+    ) {
+      return;
+    }
+    try {
+      setBulkBusy(true);
+      await api.vaults.bulkDelete(activeVault.id, selectedFileIds);
+      setSelectedFileIds([]);
+      await loadVaultDetail(activeVault.id);
+      const list = await api.vaults.list();
+      setVaults(list);
+    } catch {
+      alert("تعذر حذف الملفات المحددة");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  async function handleBulkMove() {
+    if (!activeVault || selectedFileIds.length === 0 || !targetVaultId) return;
+    try {
+      setBulkBusy(true);
+      await api.vaults.bulkMove(activeVault.id, selectedFileIds, targetVaultId);
+      setMoveModalOpen(false);
+      setSelectedFileIds([]);
+      await loadVaultDetail(activeVault.id);
+      const list = await api.vaults.list();
+      setVaults(list);
+    } catch {
+      alert("تعذر نقل الملفات");
+    } finally {
+      setBulkBusy(false);
     }
   }
 
@@ -215,7 +311,7 @@ export default function VaultsPage() {
   const totalStorageSize = vaults?.reduce((acc, v) => acc + v.total_size, 0) || 0;
 
   return (
-    <div className="container" style={{ paddingBottom: "4rem" }}>
+    <div className="container" style={{ paddingBottom: "5rem" }}>
       {/* الشريط العلوي العام */}
       <div
         style={{
@@ -235,7 +331,7 @@ export default function VaultsPage() {
             </h1>
           </div>
           <p className="muted" style={{ margin: "0.3rem 0 0" }}>
-            حفظ وتنظيم الملفات المستوردة من جهات خارجية بجميع الصيغ دون قيود (مستندات، مضغوط، كود، وسائط، برمجيات).
+            حفظ وتنظيم الملفات المستوردة من جهات خارجية بجميع الصيغ دون قيود مع المعاينة والقراءة المباشرة وتصدير ZIP.
           </p>
         </div>
 
@@ -479,20 +575,29 @@ export default function VaultsPage() {
                 )}
               </div>
 
-              {/* أزرار الاستيراد والرفع */}
+              {/* أزرار الاستيراد والرفع وتصدير ZIP */}
               <div className="row" style={{ gap: "0.5rem", flexWrap: "wrap" }}>
+                <a
+                  href={api.vaults.exportZipUrl(activeVault.id)}
+                  download
+                  className="btn btn-ghost"
+                  style={{ borderColor: "rgba(245, 158, 11, 0.4)", color: "#fbbf24" }}
+                  title="تصدير الخزينة كاملة كأرشيف ZIP مضغوط"
+                >
+                  📦 تصدير الخزينة كـ ZIP
+                </a>
                 <button
                   className="btn btn-primary"
                   onClick={() => setImportUrlModalOpen(true)}
-                  title="استيراد ملف من رابط ويب خارجي"
+                  title="استيراد ملفات من روابط ويب خارجية فردية أو جماعية"
                 >
-                  🌐 استيراد من رابط خارجي
+                  🌐 استيراد من روابط خارجية
                 </button>
                 <button
                   className="btn btn-primary"
                   style={{ background: "var(--green)", borderColor: "var(--green)" }}
                   onClick={() => setUploadModalOpen(true)}
-                  title="رفع ملفات بأي صيغة"
+                  title="رفع ملفات بأي صيغة مع تحديد المجلد والوسوم"
                 >
                   📤 رفع واستيراد ملفات
                 </button>
@@ -554,7 +659,174 @@ export default function VaultsPage() {
                 />
               </div>
             </div>
+
+            {/* تصفية المجلدات الفرعية والوسوم (Folders & Tags) */}
+            {((activeVault.folders && activeVault.folders.length > 0) ||
+              (activeVault.all_tags && activeVault.all_tags.length > 0)) && (
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: "1rem",
+                  marginTop: "0.8rem",
+                  paddingTop: "0.8rem",
+                  borderTop: "1px dashed var(--border)",
+                  fontSize: "0.85rem",
+                }}
+              >
+                {/* المجلدات */}
+                {activeVault.folders && activeVault.folders.length > 0 && (
+                  <div className="row" style={{ gap: "0.35rem", flexWrap: "wrap" }}>
+                    <span className="muted" style={{ fontWeight: 600 }}>المجلد:</span>
+                    <button
+                      type="button"
+                      className="btn btn-xs"
+                      style={{
+                        background: selectedFolder === "" ? "var(--primary-soft)" : "transparent",
+                        borderColor: selectedFolder === "" ? "var(--primary)" : "var(--border)",
+                        color: selectedFolder === "" ? "#93c5fd" : "var(--muted)",
+                      }}
+                      onClick={() => setSelectedFolder("")}
+                    >
+                      الكل
+                    </button>
+                    {activeVault.folders.map((folder) => (
+                      <button
+                        key={folder}
+                        type="button"
+                        className="btn btn-xs"
+                        style={{
+                          background: selectedFolder === folder ? "var(--primary-soft)" : "transparent",
+                          borderColor: selectedFolder === folder ? "var(--primary)" : "var(--border)",
+                          color: selectedFolder === folder ? "#93c5fd" : "var(--muted)",
+                        }}
+                        onClick={() => setSelectedFolder(selectedFolder === folder ? "" : folder)}
+                      >
+                        📁 {folder}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* الوسوم */}
+                {activeVault.all_tags && activeVault.all_tags.length > 0 && (
+                  <div className="row" style={{ gap: "0.35rem", flexWrap: "wrap" }}>
+                    <span className="muted" style={{ fontWeight: 600 }}>الوسم:</span>
+                    <button
+                      type="button"
+                      className="btn btn-xs"
+                      style={{
+                        background: selectedTag === "" ? "var(--primary-soft)" : "transparent",
+                        borderColor: selectedTag === "" ? "var(--primary)" : "var(--border)",
+                        color: selectedTag === "" ? "#93c5fd" : "var(--muted)",
+                      }}
+                      onClick={() => setSelectedTag("")}
+                    >
+                      الكل
+                    </button>
+                    {activeVault.all_tags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        className="btn btn-xs"
+                        style={{
+                          background: selectedTag === tag ? "rgba(168, 85, 247, 0.2)" : "transparent",
+                          borderColor: selectedTag === tag ? "#a855f7" : "var(--border)",
+                          color: selectedTag === tag ? "#d8b4fe" : "var(--muted)",
+                        }}
+                        onClick={() => setSelectedTag(selectedTag === tag ? "" : tag)}
+                      >
+                        🏷️ {tag}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* شريط الإجراءات الجماعية (Bulk Actions Toolbar) */}
+          {activeVault.files.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "0.8rem",
+                padding: "0.6rem 1rem",
+                background: selectedFileIds.length > 0 ? "rgba(59, 130, 246, 0.12)" : "var(--card-2)",
+                border: selectedFileIds.length > 0 ? "1px solid rgba(59, 130, 246, 0.3)" : "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <div className="row" style={{ gap: "0.6rem" }}>
+                <input
+                  type="checkbox"
+                  id="select-all-files"
+                  checked={
+                    activeVault.files.length > 0 &&
+                    selectedFileIds.length === activeVault.files.length
+                  }
+                  onChange={toggleSelectAll}
+                  style={{ cursor: "pointer", width: "16px", height: "16px" }}
+                />
+                <label
+                  htmlFor="select-all-files"
+                  style={{ cursor: "pointer", fontSize: "0.88rem", fontWeight: 600 }}
+                >
+                  {selectedFileIds.length > 0
+                    ? `تم تحديد ${selectedFileIds.length} من أصل ${activeVault.files.length} ملف`
+                    : `تحديد الكل (${activeVault.files.length} ملف)`}
+                </label>
+              </div>
+
+              {selectedFileIds.length > 0 && (
+                <div className="row" style={{ gap: "0.5rem" }}>
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={handleBulkDownload}
+                    disabled={bulkBusy}
+                    title="تحميل الملفات المحددة في أرشيف ZIP"
+                  >
+                    📦 تحميل ZIP ({selectedFileIds.length})
+                  </button>
+                  <button
+                    className="btn btn-sm btn-ghost"
+                    style={{ borderColor: "var(--border)" }}
+                    onClick={() => {
+                      const otherVaults = vaults?.filter((v) => v.id !== activeVault.id) || [];
+                      if (otherVaults.length > 0) {
+                        setTargetVaultId(otherVaults[0].id);
+                      }
+                      setMoveModalOpen(true);
+                    }}
+                    disabled={bulkBusy}
+                    title="نقل الملفات المحددة إلى خزينة أخرى"
+                  >
+                    📁 نقل إلى خزينة
+                  </button>
+                  <button
+                    className="btn btn-sm btn-ghost"
+                    style={{ color: "var(--danger)", borderColor: "rgba(239, 68, 68, 0.4)" }}
+                    onClick={handleBulkDelete}
+                    disabled={bulkBusy}
+                    title="حذف الملفات المحددة دفعة واحدة"
+                  >
+                    🗑️ حذف المحدد ({selectedFileIds.length})
+                  </button>
+                  <button
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => setSelectedFileIds([])}
+                  >
+                    إلغاء التحديد
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* قائمة الملفات */}
           {activeVault.files.length === 0 ? (
@@ -562,7 +834,7 @@ export default function VaultsPage() {
               <div style={{ fontSize: "2.8rem", marginBottom: "0.5rem" }}>📂</div>
               <h3>لا توجد ملفات تطابق البحث أو الخزينة فارغة</h3>
               <p className="muted" style={{ maxWidth: "460px", margin: "0.5rem auto 1.5rem" }}>
-                يمكنك استيراد ملفات من روابط خارجية مباشرة أو رفع ملفات بأي صيغة كانت (PDF, ZIP, DOCX, MP4, PY, EXE, ...).
+                يمكنك استيراد ملفات من روابط خارجية مباشرة أو رفع ملفات بأي صيغة كانت (PDF, ZIP, DOCX, PPTX, XLSX, MP4, PY, EXE, ...).
               </p>
               <div className="row" style={{ justifyContent: "center", gap: "0.6rem" }}>
                 <button className="btn btn-primary" onClick={() => setImportUrlModalOpen(true)}>
@@ -587,6 +859,8 @@ export default function VaultsPage() {
             >
               {activeVault.files.map((file) => {
                 const badge = getCategoryColor(file.ext);
+                const isSelected = selectedFileIds.includes(file.id);
+
                 return (
                   <div
                     key={file.id}
@@ -596,29 +870,38 @@ export default function VaultsPage() {
                       flexDirection: "column",
                       justifyContent: "space-between",
                       padding: "1rem",
-                      background: "var(--card-2)",
-                      border: "1px solid var(--border)",
+                      background: isSelected ? "rgba(59, 130, 246, 0.08)" : "var(--card-2)",
+                      border: isSelected ? "1px solid #3b82f6" : "1px solid var(--border)",
                       borderRadius: "var(--radius)",
+                      transition: "border-color 0.15s, background-color 0.15s",
                     }}
                   >
                     <div>
                       {/* رأس بطاقة الملف */}
                       <div className="row" style={{ justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                        <span
-                          className="badge"
-                          style={{
-                            background: badge.bg,
-                            color: badge.color,
-                            fontWeight: 700,
-                            fontSize: "0.8rem",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "0.3rem",
-                          }}
-                        >
-                          <span>{badge.icon}</span>
-                          <span>{file.ext ? file.ext.toUpperCase() : "ملف"}</span>
-                        </span>
+                        <div className="row" style={{ gap: "0.5rem" }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectFile(file.id)}
+                            style={{ cursor: "pointer", width: "16px", height: "16px" }}
+                          />
+                          <span
+                            className="badge"
+                            style={{
+                              background: badge.bg,
+                              color: badge.color,
+                              fontWeight: 700,
+                              fontSize: "0.8rem",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.3rem",
+                            }}
+                          >
+                            <span>{badge.icon}</span>
+                            <span>{file.ext ? file.ext.toUpperCase() : "ملف"}</span>
+                          </span>
+                        </div>
 
                         <div className="row" style={{ gap: "0.3rem" }}>
                           {file.source_type === "external_url" ? (
@@ -683,6 +966,37 @@ export default function VaultsPage() {
                         </div>
                       )}
 
+                      {/* مجلد ووسوم الملف إن وجدت */}
+                      {(file.folder || (file.tags && file.tags.length > 0)) && (
+                        <div className="row" style={{ gap: "0.3rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                          {file.folder && (
+                            <span
+                              className="badge"
+                              style={{
+                                background: "rgba(59, 130, 246, 0.1)",
+                                color: "#93c5fd",
+                                fontSize: "0.75rem",
+                              }}
+                            >
+                              📁 {file.folder}
+                            </span>
+                          )}
+                          {file.tags?.map((t) => (
+                            <span
+                              key={t}
+                              className="badge"
+                              style={{
+                                background: "rgba(168, 85, 247, 0.12)",
+                                color: "#d8b4fe",
+                                fontSize: "0.72rem",
+                              }}
+                            >
+                              🏷️ {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="row" style={{ gap: "0.8rem", fontSize: "0.8rem", color: "var(--muted)" }}>
                         <span>{formatBytes(file.size)}</span>
                         <span>·</span>
@@ -737,11 +1051,13 @@ export default function VaultsPage() {
                         </button>
                         <button
                           className="icon-btn"
-                          title="تعديل الاسم والملاحظات"
+                          title="تعديل الاسم والمجلد والوسوم"
                           onClick={() => {
                             setEditingFile(file);
                             setRenameValue(file.filename);
                             setDescValue(file.description || "");
+                            setFolderValue(file.folder || "");
+                            setTagsValue(file.tags ? file.tags.join(", ") : "");
                           }}
                         >
                           ✏️
@@ -777,30 +1093,9 @@ export default function VaultsPage() {
           vaultId={activeVault.id}
           vaultName={activeVault.name}
           onClose={() => setImportUrlModalOpen(false)}
-          onSuccess={(newFile) => {
-            setActiveVault((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    file_count: prev.file_count + 1,
-                    total_size: prev.total_size + newFile.size,
-                    files: [newFile, ...prev.files],
-                  }
-                : null
-            );
-            setVaults((prev) =>
-              prev
-                ? prev.map((v) =>
-                    v.id === activeVault.id
-                      ? {
-                          ...v,
-                          file_count: v.file_count + 1,
-                          total_size: v.total_size + newFile.size,
-                        }
-                      : v
-                  )
-                : null
-            );
+          onSuccess={() => {
+            loadVaultDetail(activeVault.id);
+            api.vaults.list().then(setVaults);
           }}
         />
       )}
@@ -810,31 +1105,9 @@ export default function VaultsPage() {
           vaultId={activeVault.id}
           vaultName={activeVault.name}
           onClose={() => setUploadModalOpen(false)}
-          onSuccess={(uploadedList) => {
-            const addedSize = uploadedList.reduce((acc, f) => acc + f.size, 0);
-            setActiveVault((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    file_count: prev.file_count + uploadedList.length,
-                    total_size: prev.total_size + addedSize,
-                    files: [...uploadedList, ...prev.files],
-                  }
-                : null
-            );
-            setVaults((prev) =>
-              prev
-                ? prev.map((v) =>
-                    v.id === activeVault.id
-                      ? {
-                          ...v,
-                          file_count: v.file_count + uploadedList.length,
-                          total_size: v.total_size + addedSize,
-                        }
-                      : v
-                  )
-                : null
-            );
+          onSuccess={() => {
+            loadVaultDetail(activeVault.id);
+            api.vaults.list().then(setVaults);
           }}
         />
       )}
@@ -854,6 +1127,7 @@ export default function VaultsPage() {
         />
       )}
 
+      {/* نافذة تعديل بيانات الملف والوسوم والمجلد */}
       {editingFile && (
         <Modal title="تعديل بيانات الملف" onClose={() => setEditingFile(null)}>
           <form onSubmit={handleUpdateFileSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -865,6 +1139,27 @@ export default function VaultsPage() {
                 onChange={(e) => setRenameValue(e.target.value)}
                 required
               />
+            </div>
+
+            <div className="row" style={{ gap: "0.8rem" }}>
+              <div style={{ flex: 1 }}>
+                <label className="label">المجلد الفرعي (اختياري)</label>
+                <input
+                  className="input"
+                  value={folderValue}
+                  onChange={(e) => setFolderValue(e.target.value)}
+                  placeholder="مثال: مراجع, برمجيات..."
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="label">الوسوم (مفصولة بفاصلة)</label>
+                <input
+                  className="input"
+                  value={tagsValue}
+                  onChange={(e) => setTagsValue(e.target.value)}
+                  placeholder="مثال: رياضيات, مهم, 2026"
+                />
+              </div>
             </div>
 
             <div>
@@ -887,6 +1182,54 @@ export default function VaultsPage() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* نافذة النقل الجماعي إلى خزينة أخرى */}
+      {moveModalOpen && activeVault && (
+        <Modal title="نقل الملفات المحددة إلى خزينة أخرى" onClose={() => setMoveModalOpen(false)}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <p className="muted" style={{ margin: 0 }}>
+              سيتم نقل <strong>{selectedFileIds.length}</strong> ملفاً من الخزينة الحالية (
+              {activeVault.name}) إلى الخزينة التي تختارها:
+            </p>
+
+            <div>
+              <label className="label">الخزينة الهدف *</label>
+              <select
+                className="input"
+                value={targetVaultId}
+                onChange={(e) => setTargetVaultId(e.target.value)}
+              >
+                {vaults
+                  ?.filter((v) => v.id !== activeVault.id)
+                  .map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.icon} {v.name} ({v.file_count} ملف)
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="row" style={{ justifyContent: "flex-end", gap: "0.5rem" }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setMoveModalOpen(false)}
+                disabled={bulkBusy}
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleBulkMove}
+                disabled={bulkBusy || !targetVaultId}
+              >
+                {bulkBusy ? "جاري النقل..." : "تأكيد النقل"}
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

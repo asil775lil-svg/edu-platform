@@ -25,7 +25,7 @@ from app.schemas import FirebaseLoginIn, LoginIn, ProfileUpdateIn, RegisterIn, U
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-def _start_session(db: DbSession, user: User, response: Response) -> None:
+def _start_session(db: DbSession, user: User, response: Response) -> str:
     token = new_token()
     db.add(
         Session(
@@ -44,6 +44,7 @@ def _start_session(db: DbSession, user: User, response: Response) -> None:
         max_age=settings.session_ttl_days * 86400,
         path="/",
     )
+    return token
 
 
 @router.post("/register", response_model=UserOut, status_code=201)
@@ -64,8 +65,10 @@ def register(payload: RegisterIn, response: Response, db: DbSession = Depends(ge
     user.public_key = pub_key
     user.private_key_enc = priv_enc
     db.commit()
-    _start_session(db, user, response)
-    return user
+    token = _start_session(db, user, response)
+    out = UserOut.model_validate(user)
+    out.token = token
+    return out
 
 
 @router.post("/login", response_model=UserOut)
@@ -85,8 +88,10 @@ def login(payload: LoginIn, response: Response, db: DbSession = Depends(get_db))
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
 
-    _start_session(db, user, response)
-    return user
+    token = _start_session(db, user, response)
+    out = UserOut.model_validate(user)
+    out.token = token
+    return out
 
 
 
@@ -122,8 +127,10 @@ def firebase_login(
         user.private_key_enc = priv_enc
         db.commit()
 
-    _start_session(db, user, response)
-    return user
+    token = _start_session(db, user, response)
+    out = UserOut.model_validate(user)
+    out.token = token
+    return out
 
 
 

@@ -22,6 +22,8 @@ export function VaultUploadModal({ vaultId, vaultName, onClose, onSuccess }: Pro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [description, setDescription] = useState("");
+  const [folder, setFolder] = useState("");
+  const [tagsStr, setTagsStr] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploadIndex, setUploadIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -48,11 +50,22 @@ export function VaultUploadModal({ vaultId, vaultName, onClose, onSuccess }: Pro
     setError(null);
     const uploadedFiles: VaultFile[] = [];
 
+    const parsedTags = tagsStr
+      .split(/[,،]/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         setUploadIndex(i + 1);
         const f = selectedFiles[i];
-        const res = await api.vaults.upload(vaultId, f, description.trim() || undefined);
+        const res = await api.vaults.upload(
+          vaultId,
+          f,
+          description.trim() || undefined,
+          folder.trim() || undefined,
+          parsedTags,
+        );
         uploadedFiles.push(res);
       }
       onSuccess(uploadedFiles);
@@ -153,6 +166,27 @@ export function VaultUploadModal({ vaultId, vaultName, onClose, onSuccess }: Pro
             ))}
           </div>
         )}
+
+        <div className="row" style={{ gap: "0.8rem" }}>
+          <div style={{ flex: 1 }}>
+            <label className="label">المجلد الحاوي (اختياري)</label>
+            <input
+              className="input"
+              value={folder}
+              onChange={(e) => setFolder(e.target.value)}
+              placeholder="مثال: مراجع، وحدة-1، كود"
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label className="label">الوسوم (مفصولة بفواصل)</label>
+            <input
+              className="input"
+              value={tagsStr}
+              onChange={(e) => setTagsStr(e.target.value)}
+              placeholder="مثال: صور, مشروع, تدريب"
+            />
+          </div>
+        </div>
 
         <div>
           <label className="label">ملاحظات مشتركة (اختياري)</label>
