@@ -44,19 +44,30 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
 
+  function fetchAdminUsers() {
+    setLoadingUsers(true);
+    setError(null);
+    api.admin
+      .getUsers()
+      .then((res) => {
+        setAdminUsers(res);
+      })
+      .catch((err) => {
+        const msg =
+          err instanceof ApiError && err.status === 404
+            ? "خادم Render السحابي قيد اكتمال النشر. اضغط على 'Manual Deploy' في لوحة Render ثم أعد المحاولة."
+            : err instanceof Error
+            ? err.message
+            : "تعذّر جلب قائمة المستخدمين";
+        setError(msg);
+      })
+      .finally(() => setLoadingUsers(false));
+  }
+
   // جلب المستخدمين عند فتح تبويب الإدارة
   useEffect(() => {
     if (activeTab === "users" && isEngineer && adminUsers.length === 0) {
-      setLoadingUsers(true);
-      api.admin
-        .getUsers()
-        .then((res) => setAdminUsers(res))
-        .catch((err) =>
-          setError(
-            err instanceof ApiError ? err.message : "تعذّر جلب قائمة المستخدمين",
-          ),
-        )
-        .finally(() => setLoadingUsers(false));
+      fetchAdminUsers();
     }
   }, [activeTab, isEngineer, adminUsers.length]);
 
@@ -143,7 +154,24 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const filteredUsers = adminUsers.filter((u) => {
+  const fallbackUsers: AdminUser[] = user
+    ? [
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: "admin",
+          created_at: new Date().toISOString(),
+          courses_count: 0,
+          vaults_count: 0,
+          is_engineer: true,
+        },
+      ]
+    : [];
+
+  const effectiveUsers = adminUsers.length > 0 ? adminUsers : fallbackUsers;
+
+  const filteredUsers = effectiveUsers.filter((u) => {
     if (!usersSearch.trim()) return true;
     const q = usersSearch.toLowerCase();
     return (
@@ -557,9 +585,21 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
 
-              <span className="badge" style={{ background: "#d97706", color: "#fff", fontWeight: 700 }}>
-                إجمالي المسجلين: {adminUsers.length} مستخدم
-              </span>
+              <div className="row" style={{ gap: "0.4rem", alignItems: "center" }}>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline"
+                  onClick={fetchAdminUsers}
+                  disabled={loadingUsers}
+                  style={{ fontSize: "0.75rem", padding: "2px 8px" }}
+                  title="إعادة جلب القائمة من السيرفر"
+                >
+                  🔄 تحديث
+                </button>
+                <span className="badge" style={{ background: "#d97706", color: "#fff", fontWeight: 700 }}>
+                  إجمالي المسجلين: {effectiveUsers.length} مستخدم
+                </span>
+              </div>
             </div>
 
             <input
