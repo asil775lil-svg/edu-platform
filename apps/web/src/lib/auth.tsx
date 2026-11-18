@@ -13,6 +13,8 @@ import {
   googleProvider,
   githubProvider,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   firebaseSignOut,
   onAuthStateChanged,
 } from "./firebase";
@@ -100,10 +102,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       refresh,
       signIn: async (identifier, password) => {
+        const isEmail = identifier.includes("@");
+        if (isEmail) {
+          try {
+            const cred = await signInWithEmailAndPassword(auth, identifier.trim().toLowerCase(), password);
+            const idToken = await cred.user.getIdToken();
+            const loggedUser = await api.firebaseLogin({
+              id_token: idToken,
+              role: "teacher",
+              name: cred.user.displayName || undefined,
+            });
+            setUser(loggedUser);
+            return;
+          } catch {
+            // fallback to direct server login if Firebase sign-in was not used
+          }
+        }
         setUser(await api.login({ login: identifier, password }));
       },
       signUp: async (email, password, name, role) => {
-        setUser(await api.register({ email, password, name, role }));
+        try {
+          // تسجيل الحساب مركزياً في Firebase Authentication
+          const cred = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+          const idToken = await cred.user.getIdToken();
+          const loggedUser = await api.firebaseLogin({
+            id_token: idToken,
+            role,
+            name: name.trim(),
+          });
+          setUser(loggedUser);
+        } catch (fbErr: unknown) {
+          // إذا كان مسجلاً مسبقاً في Firebase أو تعذر الاتصال به، نسجل في السيرفر
+          setUser(await api.register({ email, password, name, role }));
+        }
       },
       signInWithGoogle: async (role = "teacher") => {
         const result = await signInWithPopup(auth, googleProvider);
